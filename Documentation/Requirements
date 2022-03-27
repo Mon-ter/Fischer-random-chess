@@ -1,16 +1,48 @@
+Wymagania dotyczące projektu
+
 1.Wybór trybu gry
+  -> możliwość wyboru przez użytkownika pomiędzy partią szachów bez pomiaru czasu a partią, gdzie ten pomiar jest uskuteczniany; w drugim wypadku dostępne tryby to odpowiednio:
+  3, 5 i 15 minut na gracza oraz 3 + 2 (3 minuty na gracza z dwusekundową bonifikatą za każdy ruch)
 2.Zapisywanie ostatnich kilku partii w formacie pgn
-3.Wczytanie planszy danej w formacie pgn
+  -> po skończonej rozgrywce aplikacja udostępnia możliwość zapisania partii w bazie danych, co zostanie uskutecznione korzystając ze zunifikowanego formatu zapisu gier PGN [1]
+3.Wczytanie planszy danej w formacie PGN
+  -> aplikacja umożliwia wczytanie partii w wyżej wymienionym formacie poprzez stosowny plik tekstowy i umożliwia jej swobodną analizę przy pomocy funkcjonalności przeglądania ruchów
 4.Wybór między szachami klasycznymi a szachami Fischera
+  -> selekcja pomiędzy szachami domyślnymi a mniej popularną odmianą szachów - znaną jako "szachy 960" (chess 960) bądź "szachy Fischera" (Fischer random chess, od imienia Roberta J. Fischera)
+  -> reguły powyższych dostępne pod linkiem [2]
 5.Wylosowanie początkowej pozycji
+  -> funkcjonalność losuje poprawną pozycję początkową w szachach Fischera, w myśl [2]
 6.Sprawdzanie poprawności ruchu
+  -> funkcjonalność sprawdza, czy wykonany przez użytkownika ruch stoi w zgodzie z przepisami [2], w szczególności
+    -> czy figura wykonała dopuszczone posunięcie dla figur jej typu
+    -> czy król gracza w wyniku posunięcia nie znalazł się w pozycji szachu
+    -> czy gracz nie miał obowiązku obronić się w danym ruchu przed zadanym szachem
 7.Możliwość manualnego zakończenia gry
+  -> aplikacja oferuje możliwość zaoferowania przeciwnikowi remisu, bądź też poddania partii
 8.Sprawdzanie, czy gra zakończyła się po każdym ruchu
+  -> aplikacja, w myśl [2], po każdym wykonanym posunięciu weryfikuje, czy partia została zakończona:
+    -> czy nastapił mat (partia kończy się zwycięstwem gracza matującego nad graczem zmatowanym)
+    -> wpp., czy nastąpił pat (partia kończy się remisem)
 9.Możliwość wyboru planszy i figur.
+  -> aplikacja umożliwia graczowi wybór stylizacji szachownicy i bierek
+  -> projekt powyższych zostanie przedstawiony w stosownym czasie
 10.Możliwość manipulacji czasem
-~Dodane przez "klienta"
+  -> aplikacja w trybie gry na czas umożliwia dodanie czasu przeciwnikowi (gest o naturze dobrowolnej)
+  
+Wymagania dodane przez klienta:
 11.Animacje ruchów
-12.Statystyka (skreślone)
-13.Wybór dźwieku podczas ruchu, szacha, wygranej itp. (Joasia mówiła że trudne)
-14.System turniejów (skreślone)
+  -> po wyborze figury, aplikacja podświetla ją oraz pola, na które figura może się przemieścić w jednym ruchu
+13.Wybór dźwieku podczas ruchu, szacha, wygranej itp.
+  -> aplikacja udostępnia ścieżkę dźwięków emitowanych w czasie zachodzących na szachownicy zdarzeń, takich jak początek i koniec partii, bicie, szach
+   -> projekt powyższych zostanie przedstawiony w stosownym czasie
 15.Cofanie do poprzednich pozycji podczas gry
+  -> aplikacja umożliwia przegląd ruchów wstecz w czasie partii (w czasie ruchu danego gracza)
+  -> w trybie gry na czas, przegląd ruchów wstecz nie wstrzymuje zegara
+
+Wymagania klienta skreślone przez Projekt:
+
+14.Statystyka (skreślone)
+15.System turniejów (skreślone)
+
+Ad. 1 - Portable Game Notation https://en.wikipedia.org/wiki/Portable_Game_Notation
+Ad. 2 - Chess rules https://www.fide.com/FIDE/handbook/LawsOfChess.pdf
