@@ -1,0 +1,16 @@
+1.Wybór trybu gry
+2.Zapisywanie ostatnich kilku partii w formacie pgn
+3.Wczytanie planszy danej w formacie pgn
+4.Wybór między szachami klasycznymi a szachami Fischera
+5.Wylosowanie początkowej pozycji
+6.Sprawdzanie poprawności ruchu
+7.Możliwość manualnego zakończenia gry
+8.Sprawdzanie, czy gra zakończyła się po każdym ruchu
+9.Możliwość wyboru planszy i figur.
+10.Możliwość manipulacji czasem
+~Dodane przez "klienta"
+11.Animacje ruchów
+12.Statystyka (skreślone)
+13.Wybór dźwieku podczas ruchu, szacha, wygranej itp. (Joasia mówiła że trudne)
+14.System turniejów (skreślone)
+15.Cofanie do poprzednich pozycji podczas gry
