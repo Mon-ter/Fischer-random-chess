@@ -37,11 +37,20 @@ Wymagania dodane przez klienta:
 13.Cofanie do poprzednich pozycji podczas gry
   -> aplikacja umożliwia przegląd ruchów wstecz w czasie partii (w czasie ruchu danego gracza)
   -> w trybie gry na czas, przegląd ruchów wstecz nie wstrzymuje zegara
+  
+Wymagania niefunkcjonalne
+14. Gra zgodna z systemem Windows11
+15. Gra niezawodna w obrębie oferowanych przez siebie funkcjonalności
+16. Gra z percepcyjnie natychmiastową reakcją na działanie użytkownika przy RAM 8 GB
 
 Wymagania klienta skreślone przez Projekt:
 
-14. Wybór dźwieku podczas ruchu, szacha, wygranej itp. (skreślone)
-15. System turniejów (skreślone)
+17. Wybór dźwieku podczas ruchu, szacha, wygranej itp. (skreślone)
+18. System turniejów (skreślone)
+
+
+
+
 
 Ad. 1 - Portable Game Notation https://en.wikipedia.org/wiki/Portable_Game_Notation
 Ad. 2 - Chess rules https://www.fide.com/FIDE/handbook/LawsOfChess.pdf
