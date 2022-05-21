@@ -11,7 +11,7 @@ Wymagania dotyczące projektu
   -> selekcja pomiędzy szachami domyślnymi a mniej popularną odmianą szachów - znaną jako "szachy 960" (chess 960) bądź "szachy Fischera" (Fischer random chess, od imienia Roberta J. Fischera)
   -> reguły powyższych dostępne pod linkiem [2]
 5.Wylosowanie początkowej pozycji
-  -> funkcjonalność losuje poprawną pozycję początkową w szachach Fischera, w myśl [2]
+  -> funkcjonalność losuje poprawną pozycję początkową w szachach Fischera, w myśl [2] [3]
 6.Sprawdzanie poprawności ruchu
   -> funkcjonalność sprawdza, czy wykonany przez użytkownika ruch stoi w zgodzie z przepisami [2], w szczególności
     -> czy figura wykonała dopuszczone posunięcie dla figur jej typu
@@ -54,3 +54,4 @@ Wymagania klienta skreślone przez Projekt:
 
 Ad. 1 - Portable Game Notation https://en.wikipedia.org/wiki/Portable_Game_Notation
 Ad. 2 - Chess rules https://www.fide.com/FIDE/handbook/LawsOfChess.pdf
+Ad. 3 - Fischer chess starting point https://www.chess.com/forum/view/general/starting-position-chess960
