@@ -103,13 +103,14 @@ public class Piece extends StackPane {
                             checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + 2 * direction, enPassantXPossibility,false, false);
                         } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 1) {
                             checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() +  2 * direction, enPassantXPossibility, false, false);
-                        } else if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 3) {
-                            checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true);
-                            checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true);
-                        } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 4) {
-                            checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true);
-                            checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true);
                         }
+                    }
+                    if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 3) {
+                        checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true);
+                        checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true);
+                    } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 4) {
+                        checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true);
+                        checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true);
                     }
                     checkSquareAndAddIt(getCoordinates().getX() + direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true);
                     checkSquareAndAddIt(getCoordinates().getX() - direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true);
