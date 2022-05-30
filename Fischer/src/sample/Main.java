@@ -1,17 +1,20 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-
-import java.util.ArrayList;
 
 public class Main extends Application {
 
@@ -41,13 +44,37 @@ public class Main extends Application {
     TurnIndicator onMove = null;
     GameSupervisor gameSupervisor = null;
 
-    private Parent createContent(boolean FischerOnes) {
+    private Parent createContent(boolean FischerOnes, Stage stage) {
         BorderPane root = new BorderPane();
         Pane center = new Pane();
+        Pane right = new Pane();
+        root.setRight(right);
         root.setCenter(center);
 
         center.setPrefSize(TILE_SIZE * SQUARE_NUMBER, TILE_SIZE * SQUARE_NUMBER);
         center.getChildren().addAll(tiles, pieces);
+
+        right.setPrefSize(TILE_SIZE * 3, TILE_SIZE * SQUARE_NUMBER);
+        Button draw = new Button("Take draw");
+        Button resign = new Button("Resign");
+        draw.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                stage.setScene(createEndingScene(Result.DRAW, gameSupervisor));
+            }
+        });
+
+        resign.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                stage.setScene(createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BlACK : Result.WHITE, gameSupervisor));
+            }
+        });
+
+        HBox manualEndings = new HBox(draw, resign);
+        manualEndings.relocate((TILE_SIZE * 3 - manualEndings.getWidth()) / 2, TILE_SIZE * 4);
+
+        right.getChildren().add(manualEndings);
 
         ExCoordinates positionCreator = new ExCoordinates(FischerOnes);
 
@@ -63,22 +90,22 @@ public class Main extends Application {
                 board [x] [y] = tile;
 
                 if (y == 1) {
-                    Piece piece = makePiece(PieceColour.BLACK, PieceKind.PAWN, x, y, board);
+                    Piece piece = makePiece(PieceColour.BLACK, PieceKind.PAWN, x, y, board, stage);
                     tile.setPiece(piece);
                     pieces.getChildren().add(piece);
                     darkAlivePieces.hire(piece);
                 } else if (y == 6) {
-                    Piece piece = makePiece(PieceColour.WHITE, PieceKind.PAWN, x, y, board);
+                    Piece piece = makePiece(PieceColour.WHITE, PieceKind.PAWN, x, y, board, stage);
                     tile.setPiece(piece);
                     pieces.getChildren().add(piece);
                     whiteAlivePieces.hire(piece);
                 } else if (y == 0) {
-                    Piece piece = makePiece(PieceColour.BLACK, positionCreator.retrieveWhichPiece(x), x, y, board);
+                    Piece piece = makePiece(PieceColour.BLACK, positionCreator.retrieveWhichPiece(x), x, y, board, stage);
                     tile.setPiece(piece);
                     pieces.getChildren().add(piece);
                     darkAlivePieces.hire(piece);
                 } else if (y == 7) {
-                    Piece piece = makePiece(PieceColour.WHITE, positionCreator.retrieveWhichPiece(x), x, y, board);
+                    Piece piece = makePiece(PieceColour.WHITE, positionCreator.retrieveWhichPiece(x), x, y, board, stage);
                     tile.setPiece(piece);
                     pieces.getChildren().add(piece);
                     whiteAlivePieces.hire(piece);
@@ -107,7 +134,7 @@ public class Main extends Application {
         return (int)(pixel + TILE_SIZE / 2) / TILE_SIZE;
     }
 
-    private Piece makePiece(PieceColour colour, PieceKind kind, int x, int y, Tile [] [] board) {
+    private Piece makePiece(PieceColour colour, PieceKind kind, int x, int y, Tile [] [] board, Stage stage) {
 
         Piece  piece = new Piece(colour, kind, x, y, board, onMove);
 
@@ -164,11 +191,27 @@ public class Main extends Application {
         return onMove.getGameMode() && piece.getColour() == onMove.getPieceColour();
     }
 
+    private Scene createEndingScene(Result result, GameSupervisor gameSupervisor) {
+        String note;
+
+        if (result == Result.WHITE) {
+            note = "WHITE won";
+        } else if (result == Result.BlACK) {
+            note = "BLACK won";
+        } else {
+            note = "it ended with a draw";
+        }
+        note += "\n now it's time to allow users to save game moves using gameSupervisor";
+        Label label = new Label(note);
+        Scene scene = new Scene(label, 300, 300);
+        return scene;
+    }
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Fischer Chess");
-        Scene scene = new Scene(createContent(true));
+        Scene scene = new Scene(createContent(true, primaryStage));
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode() == KeyCode.LEFT) {
                   if (onMove.getGameMode()) {
