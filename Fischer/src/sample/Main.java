@@ -163,6 +163,7 @@ public class Main extends Application {
 
             Move result = tryMove(piece, newX, newY);
             if (result != null) {
+                boolean check = board[newX][newY].getPiece() != null;
                 Note firstMoved = new Note(piece, oldX, oldY, newX, newY);
                 Note secondMoved = null;
                 if (result.type == MoveType.KILL) {
@@ -181,7 +182,6 @@ public class Main extends Application {
                 } else {
                     enPassantXPossibility = -2;
                 }
-                boolean check = board[newX][newY].getPiece() != null;
                 int pieceDuplicationm = 0;
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
