@@ -183,14 +183,6 @@ public class Main extends Application {
                 }
                 boolean check = board[newX][newY].getPiece() != null;
                 int pieceDuplicationm = 0;
-                for(int i = 0; i < 8; i++){
-                    if (board[oldX][i].getPiece().getKind() == piece.getKind() && i != oldY){
-                        pieceDuplicationm = 1;
-                    }
-                    if (board[i][oldY].getPiece().getKind() == piece.getKind() && i != oldX){
-                        pieceDuplicationm = 2;
-                    }
-                }
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
                 board[newX][newY].setPiece(piece);
