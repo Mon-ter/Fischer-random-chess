@@ -9,13 +9,35 @@ public class GameSupervisor {
     int counter = 0;
     Tile [] [] board;
 
+    String pgnNotation = "";
+
     GameSupervisor(Tile [][] board) {
         this.board = board;
         game = new ArrayList<>();
     }
 
-    public void add(Pair<Note, Note> note) {
+    public void add(Pair<Note, Note> note,boolean check, int pieceDuplication) {
         game.add(note);
+        if(counter % 2 == 0){
+            pgnNotation += (counter/2+1 + ". ");
+        }
+        if(note.getKey().piece.getKind() !=  PieceKind.PAWN){
+            pgnNotation += note.getKey().piece.getKind().getName();
+            if (pieceDuplication == 1){
+                pgnNotation += note.getKey().from.getY();
+            }
+            if (pieceDuplication == 2){
+                pgnNotation += note.getKey().from.getXasChar();
+            }
+        }
+        if(check){
+            if(note.getKey().piece.getKind() ==  PieceKind.PAWN) {
+                pgnNotation += note.getKey().from.getXasChar();
+            }
+            pgnNotation += "x";
+        }
+        pgnNotation += note.getKey().to.getXasChar();
+        pgnNotation += (7-note.getKey().to.getY()+1) + " ";
         counter++;
     }
 
@@ -23,9 +45,24 @@ public class GameSupervisor {
         int limit = game.size();
         String result = "";
         for (int i = 0; i < limit; i++) {
-            result += (i + ". " + game.get(i).getKey().from.getX() + game.get(i).getKey().from.getY()) + "\n";
+            result += ((i+1) + ". " + game.get(i).getKey().from.getX() + game.get(i).getKey().from.getY()) + " ";
         }
         return result;
+    }
+
+    public String pgnSaver(){
+        int limit = game.size();
+        String pgn = "";
+        for(int i = 0; i < limit; i++){
+            if (i%2 == 0){
+                pgn += (i/2+1);
+            }
+            pgn += " " + game.get(i).getKey().piece.getKind().getName();
+            int n = game.get(i).getKey().to.getX();
+            char ch = (char)(n+65);
+            pgn += (ch + game.get(i).getKey().to.getY());
+        }
+        return pgn;
     }
 
     public int realSize() {

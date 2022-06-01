@@ -1,6 +1,9 @@
 package sample;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -178,11 +181,21 @@ public class Main extends Application {
                 } else {
                     enPassantXPossibility = -2;
                 }
+                boolean check = board[newX][newY].getPiece() != null;
+                int pieceDuplicationm = 0;
+                for(int i = 0; i < 8; i++){
+                    if (board[oldX][i].getPiece().getKind() == piece.getKind() && i != oldY){
+                        pieceDuplicationm = 1;
+                    }
+                    if (board[i][oldY].getPiece().getKind() == piece.getKind() && i != oldX){
+                        pieceDuplicationm = 2;
+                    }
+                }
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
-                gameSupervisor.add(annotation);
+                gameSupervisor.add(annotation, check, pieceDuplicationm);
                 if (onMove.getPieceColour() == PieceColour.WHITE) {
                     darkAlivePieces.makeThemReady(board, enPassantXPossibility, darkKing, whiteKing);
                 } else {
@@ -217,6 +230,22 @@ public class Main extends Application {
             note = "it ended with a draw";
         }
         note += "\n now it's time to allow users to save game moves using gameSupervisor";
+        try {
+            File pgnFile = new File("pgn.txt");
+            pgnFile.createNewFile();
+        } catch(IOException e){
+        }
+        try {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            LocalDateTime now = LocalDateTime.now();
+            FileWriter writer = new FileWriter("pgn.txt", true);
+            writer.write(dtf.format(now));
+            writer.write("\n" + gameSupervisor.pgnNotation + "\n\n");
+            writer.close();
+        }catch (IOException e){
+
+        }
+
         Label label = new Label(note);
         Scene scene = new Scene(layout, 300, 300);
 
