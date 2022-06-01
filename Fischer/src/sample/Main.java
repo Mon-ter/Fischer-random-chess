@@ -290,7 +290,7 @@ public class Main extends Application {
     }
 
     public Scene GameStartMenu(Stage stage){
-        boolean fisher = false;
+        boolean fischer = false;
         File directoryPath = new File(Main.class.getResource("graphics/").getPath());
         String contents[] = directoryPath.list();
 
@@ -308,7 +308,7 @@ public class Main extends Application {
             graphicFolder = (String)choiceBox.getValue();
         });
 
-        ToggleButton toggleButton = new ToggleButton("Fisher");
+        ToggleButton toggleButton = new ToggleButton("Fischer");
 
         Button button = new Button("Start New Game");
         button.setOnAction(e -> stage.setScene(createGame(toggleButton.isSelected(), stage)));  
