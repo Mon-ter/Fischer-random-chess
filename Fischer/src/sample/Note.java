@@ -6,6 +6,7 @@ public class Note {
     Piece piece;
     Square from;
     Square to;
+
     Note(Piece piece, int xFrom, int yFrom, int xTo, int yTo) {
         this.piece = piece;
         this.from = new Square(xFrom, yFrom);
