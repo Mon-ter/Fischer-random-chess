@@ -4,6 +4,8 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+
 import java.lang.Math;
 import java.util.ArrayList;
 
@@ -49,9 +51,9 @@ public class Piece extends StackPane {
         coordinates = new Square(x, y);
         possibleMoves = new ArrayList<>();
         move(x, y);
-        Circle back = new Circle(Main.PIECE_RADIUS);
-        back.setTranslateX((Main.TILE_SIZE - 2.0 * Main.PIECE_RADIUS) / 2);
-        back.setTranslateY((Main.TILE_SIZE - 2.0 * Main.PIECE_RADIUS) / 2);
+        Rectangle back = new Rectangle(Main.PIECE_SIZE, Main.PIECE_SIZE);
+        back.setTranslateX((Main.TILE_SIZE - Main.PIECE_SIZE) / 2);
+        back.setTranslateY((Main.TILE_SIZE - Main.PIECE_SIZE) / 2);
         String src = getImageSource(colour, kind, 0);
         back.setFill(new ImagePattern(new Image(src)));
         getChildren().addAll(back);
@@ -88,8 +90,7 @@ public class Piece extends StackPane {
         String prefix = (colour == PieceColour.WHITE) ? "w" : "b";
         String rest = kind.getName();
         String extension = ".png";
-        return "sample/graphics/" + prefix + rest + extension;
-
+        return "sample/graphics/" + Main.graphicFolder + "/" + prefix + rest + extension;
     }
 
     public void findPossibleMoves(Tile [] [] board, int enPassantXPossibility, Piece ourKing, Piece enemyKing) {

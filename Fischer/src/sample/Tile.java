@@ -20,11 +20,12 @@ public class Tile extends Rectangle {
     public void setPiece(Piece piece) {
         this.piece = piece;
     }
+
     public Tile(boolean isDark, int x, int y) {
         setWidth(Main.TILE_SIZE);
         setHeight(Main.TILE_SIZE);
         relocate(x * Main.TILE_SIZE, y * Main.TILE_SIZE);
-        colour = isDark ? Color.TOMATO : Color.WHITESMOKE;
+        colour = isDark ? Main.darkTileColour : Main.lightTileColour;
         setFill(colour);
         piece = null;
     }

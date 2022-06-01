@@ -1,18 +1,27 @@
 package sample;
 
+import java.io.File;
+import java.io.IOException;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -20,9 +29,9 @@ public class Main extends Application {
 
     public static final int TILE_SIZE = 80;
     public static final int SQUARE_NUMBER = 8;
-    public static final int PIECE_RADIUS = 30;
+    public static final int PIECE_SIZE = 70;
     public static final int PIECE_NUMBER = 16;
-
+    
     public Tile [][] board = new Tile [SQUARE_NUMBER][SQUARE_NUMBER];
 
     private Group tiles = new Group();
@@ -43,6 +52,10 @@ public class Main extends Application {
 
     TurnIndicator onMove = null;
     GameSupervisor gameSupervisor = null;
+    
+    public static Color darkTileColour = Color.TOMATO;
+    public static Color lightTileColour = Color.WHITESMOKE;
+    public static String graphicFolder = "new";
 
     private Parent createContent(boolean FischerOnes, Stage stage) {
         BorderPane root = new BorderPane();
@@ -60,14 +73,14 @@ public class Main extends Application {
         draw.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                stage.setScene(createEndingScene(Result.DRAW, gameSupervisor));
+                stage.setScene(createEndingScene(Result.DRAW, gameSupervisor, stage));
             }
         });
 
         resign.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                stage.setScene(createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BlACK : Result.WHITE, gameSupervisor));
+                stage.setScene(createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BlACK : Result.WHITE, gameSupervisor, stage));
             }
         });
 
@@ -136,7 +149,7 @@ public class Main extends Application {
 
     private Piece makePiece(PieceColour colour, PieceKind kind, int x, int y, Tile [] [] board, Stage stage) {
 
-        Piece  piece = new Piece(colour, kind, x, y, board, onMove);
+        Piece piece = new Piece(colour, kind, x, y, board, onMove);
 
         piece.setOnMouseReleased(e -> {
             int newX = conversionToSquareMiddle(piece.getLayoutX());
@@ -191,7 +204,9 @@ public class Main extends Application {
         return onMove.getGameMode() && piece.getColour() == onMove.getPieceColour();
     }
 
-    private Scene createEndingScene(Result result, GameSupervisor gameSupervisor) {
+    private Scene createEndingScene(Result result, GameSupervisor gameSupervisor, Stage stage) {
+        VBox layout = new VBox();
+        layout.setAlignment(Pos.CENTER);
         String note;
 
         if (result == Result.WHITE) {
@@ -203,15 +218,18 @@ public class Main extends Application {
         }
         note += "\n now it's time to allow users to save game moves using gameSupervisor";
         Label label = new Label(note);
-        Scene scene = new Scene(label, 300, 300);
+        Scene scene = new Scene(layout, 300, 300);
+
+        Button button = new Button("Start Game");
+        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));  
+
+        layout.getChildren().addAll(label, button);
+
         return scene;
     }
 
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Fischer Chess");
-        Scene scene = new Scene(createContent(true, primaryStage));
+    public Scene createGame(boolean Fischer, Stage stage){
+        Scene scene = new Scene(createContent(Fischer, stage));
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode() == KeyCode.LEFT) {
                   if (onMove.getGameMode()) {
@@ -229,7 +247,113 @@ public class Main extends Application {
                 }
             }
         });
-        primaryStage.setScene(scene);
+
+        return scene;
+    }
+
+    public Scene MainMenu(Stage stage){
+        VBox layout = new VBox();
+        layout.setAlignment(Pos.CENTER);
+        Scene menu = new Scene(layout, 640, 640);
+        
+        Button button = new Button("Start Game");
+        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));        
+        Button button2 = new Button("Game From File");
+        button2.setOnAction(e -> stage.setScene(readFromFileScene(stage)));
+        Button button3 = new Button("Statistics");
+        button3.setOnAction(e -> stage.setScene(Statistic(stage)));
+        
+        layout.getChildren().addAll(button, button2, button3);
+
+        return menu;
+    }
+
+    public Scene GameStartMenu(Stage stage){
+        boolean fisher = false;
+        File directoryPath = new File(Main.class.getResource("graphics/").getPath());
+        String contents[] = directoryPath.list();
+
+        VBox layout = new VBox();
+        layout.setAlignment(Pos.CENTER);
+        Scene gameMenu = new Scene(layout, 640, 640);
+
+        ChoiceBox choiceBox = new ChoiceBox();
+
+        for (String folder : contents) {
+            choiceBox.getItems().add(folder);
+        }
+
+        choiceBox.setOnAction((event) -> {
+            graphicFolder = (String)choiceBox.getValue();
+        });
+
+        ToggleButton toggleButton = new ToggleButton("Fisher");
+
+        Button button = new Button("Start New Game");
+        button.setOnAction(e -> stage.setScene(createGame(toggleButton.isSelected(), stage)));  
+        
+        layout.getChildren().addAll(choiceBox, toggleButton, button);
+
+        return gameMenu;
+    }
+
+    public Scene Statistic(Stage stage){
+        VBox layout = new VBox();
+        layout.setAlignment(Pos.CENTER);
+        Scene stats = new Scene(layout, 640, 640);
+
+        Button button = new Button("Go back");
+        button.setOnAction(e -> stage.setScene(MainMenu(stage)));
+
+        layout.getChildren().addAll(button);
+
+        return stats;
+    }
+
+    public Scene readFromFileScene(Stage stage){
+        File directoryPath = new File(Main.class.getResource("graphics/").getPath());
+        String contents[] = directoryPath.list();
+
+        FileChooser fileChooser = new FileChooser();
+        VBox layout = new VBox();
+        layout.setAlignment(Pos.CENTER);
+        Scene reading = new Scene(layout, 640, 640);
+
+        ChoiceBox choiceBox = new ChoiceBox();
+
+        for (String folder : contents) {
+            choiceBox.getItems().add(folder);
+        }
+
+        choiceBox.setOnAction((event) -> {
+            graphicFolder = (String)choiceBox.getValue();
+        });
+
+        Button getFile = new Button("Open File");
+        getFile.setOnAction(
+            new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(final ActionEvent e) {
+                    File file = fileChooser.showOpenDialog(stage);
+                    if (file != null) {
+                        //odpalenie gry z pliku
+                    }
+                }
+            });
+
+        Button button2 = new Button("Go back");
+        button2.setOnAction(e -> stage.setScene(MainMenu(stage)));
+
+        layout.getChildren().addAll(getFile, button2);
+
+        return reading;
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        primaryStage.setTitle("Fischer Chess");
+        primaryStage.getIcons().add(new Image("sample/pawn.png"));        
+        primaryStage.setScene(MainMenu(primaryStage));
         primaryStage.show();
     }
 
