@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.io.IOException;
+import java.util.ArrayList;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -33,8 +35,7 @@ public class Main extends Application {
     public static final int TILE_SIZE = 80;
     public static final int SQUARE_NUMBER = 8;
     public static final int PIECE_SIZE = 70;
-    public static final int PIECE_NUMBER = 16;
-    
+
     public Tile [][] board = new Tile [SQUARE_NUMBER][SQUARE_NUMBER];
 
     private Group tiles = new Group();
@@ -55,7 +56,7 @@ public class Main extends Application {
 
     TurnIndicator onMove = null;
     GameSupervisor gameSupervisor = null;
-    
+
     public static Color darkTileColour = Color.TOMATO;
     public static Color lightTileColour = Color.WHITESMOKE;
     public static String graphicFolder = "new";
@@ -73,6 +74,9 @@ public class Main extends Application {
         right.setPrefSize(TILE_SIZE * 3, TILE_SIZE * SQUARE_NUMBER);
         Button draw = new Button("Take draw");
         Button resign = new Button("Resign");
+
+        draw.setPrefSize(PIECE_SIZE, PIECE_SIZE / 2);
+        resign.setPrefSize(PIECE_SIZE, PIECE_SIZE / 2);
         draw.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -88,9 +92,45 @@ public class Main extends Application {
         });
 
         HBox manualEndings = new HBox(draw, resign);
-        manualEndings.relocate((TILE_SIZE * 3 - manualEndings.getWidth()) / 2, TILE_SIZE * 4);
-
+        manualEndings.relocate((TILE_SIZE * 3 - 2 * PIECE_SIZE) / 2, TILE_SIZE * 4);
         right.getChildren().add(manualEndings);
+
+        Button backwardReview = new Button("Back");
+        Button forwardReview = new Button("Forward");
+
+        backwardReview.setPrefSize(PIECE_SIZE, PIECE_SIZE);
+        forwardReview.setPrefSize(PIECE_SIZE, PIECE_SIZE);
+
+        backwardReview.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (gameSupervisor.anyMovesMade()) {
+                    if (onMove.getGameMode()) {
+                        onMove.switchMode();
+                        gameSupervisor.setCounter();
+                    }
+                    gameSupervisor.retraceMove();
+                }
+            }
+        });
+
+        forwardReview.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (onMove.getGameMode()) {
+
+                } else {
+                    if(gameSupervisor.repeatMove()) {
+                        onMove.switchMode();
+                    }
+                }
+            }
+        });
+
+        HBox gameReview = new HBox(backwardReview, forwardReview);
+
+        gameReview.relocate((TILE_SIZE * 3 - 2 * PIECE_SIZE) / 2, TILE_SIZE * 5);
+        right.getChildren().add(gameReview);
 
         ExCoordinates positionCreator = new ExCoordinates(FischerOnes);
 
@@ -138,12 +178,12 @@ public class Main extends Application {
     }
 
     private Move tryMove(Piece piece, int newX, int newY) {
-       if (isOnMove(piece)) {
-           Square moveCandidate = new Square(newX, newY);
-           return piece.isMoveLegit(moveCandidate);
-       } else {
-           return null;
-       }
+        if (isOnMove(piece)) {
+            Square moveCandidate = new Square(newX, newY);
+            return piece.isMoveLegit(moveCandidate);
+        } else {
+            return null;
+        }
     }
 
     private int conversionToSquareMiddle(double pixel) {
@@ -265,7 +305,7 @@ public class Main extends Application {
         Scene scene = new Scene(layout, 300, 300);
 
         Button button = new Button("Start Game");
-        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));  
+        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));
 
         layout.getChildren().addAll(label, button);
 
@@ -275,24 +315,6 @@ public class Main extends Application {
     public Scene createGame(boolean Fischer, Stage stage){
         clearData();
         Scene scene = new Scene(createContent(Fischer, stage));
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-            if(key.getCode() == KeyCode.LEFT) {
-                  if (onMove.getGameMode()) {
-                      onMove.switchMode();
-                      gameSupervisor.setCounter();
-                  }
-                  gameSupervisor.retraceMove();
-            } else if (key.getCode() == KeyCode.RIGHT) {
-                if (onMove.getGameMode()) {
-
-                } else {
-                    if(gameSupervisor.repeatMove()) {
-                        onMove.switchMode();
-                    }
-                }
-            }
-        });
-
         return scene;
     }
 
@@ -300,14 +322,17 @@ public class Main extends Application {
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
         Scene menu = new Scene(layout, 640, 640);
-        
+
         Button button = new Button("Start Game");
-        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));        
+        button.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
+        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));
         Button button2 = new Button("Game From File");
+        button2.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
         button2.setOnAction(e -> stage.setScene(readFromFileScene(stage)));
         Button button3 = new Button("Statistics");
+        button3.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
         button3.setOnAction(e -> stage.setScene(Statistic(stage)));
-        
+
         layout.getChildren().addAll(button, button2, button3);
 
         return menu;
@@ -332,10 +357,11 @@ public class Main extends Application {
         });
 
         ToggleButton toggleButton = new ToggleButton("Fischer");
-
+        toggleButton.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
         Button button = new Button("Start New Game");
-        button.setOnAction(e -> stage.setScene(createGame(toggleButton.isSelected(), stage)));  
-        
+        button.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
+        button.setOnAction(e -> stage.setScene(createGame(toggleButton.isSelected(), stage)));
+
         layout.getChildren().addAll(choiceBox, toggleButton, button);
 
         return gameMenu;
@@ -375,15 +401,15 @@ public class Main extends Application {
 
         Button getFile = new Button("Open File");
         getFile.setOnAction(
-            new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(final ActionEvent e) {
-                    File file = fileChooser.showOpenDialog(stage);
-                    if (file != null) {
-                        //odpalenie gry z pliku
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(final ActionEvent e) {
+                        File file = fileChooser.showOpenDialog(stage);
+                        if (file != null) {
+                            //odpalenie gry z pliku
+                        }
                     }
-                }
-            });
+                });
 
         Button button2 = new Button("Go back");
         button2.setOnAction(e -> stage.setScene(MainMenu(stage)));
@@ -396,7 +422,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Fischer Chess");
-        primaryStage.getIcons().add(new Image("sample/pawn.png"));        
+        primaryStage.getIcons().add(new Image("sample/pawn.png"));
         primaryStage.setScene(MainMenu(primaryStage));
         primaryStage.show();
     }

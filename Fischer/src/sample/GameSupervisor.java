@@ -68,6 +68,10 @@ public class GameSupervisor {
     public int realSize() {
         return game.size() - 1;
     }
+
+    public boolean anyMovesMade() {
+        return game.size() != 0;
+    }
     public void setCounter() {
         counter = game.size() - 1;
     }
