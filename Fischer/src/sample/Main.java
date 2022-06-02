@@ -209,6 +209,29 @@ public class Main extends Application {
         return onMove.getGameMode() && piece.getColour() == onMove.getPieceColour();
     }
 
+    public void clearData(){
+        board = new Tile [SQUARE_NUMBER][SQUARE_NUMBER];
+
+        tiles = new Group();
+        pieces = new Group();
+
+        whiteAlivePieces = new Army();
+        darkAlivePieces = new Army();
+
+        doubleCheck = false;
+        check = false;
+
+        enPassantXPossibility = 0;
+
+        graveyard = null;
+
+        whiteKing = null;
+        darkKing = null;
+
+        onMove = null;
+        gameSupervisor = null;
+    }
+
     private Scene createEndingScene(Result result, GameSupervisor gameSupervisor, Stage stage) {
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
@@ -250,6 +273,7 @@ public class Main extends Application {
     }
 
     public Scene createGame(boolean Fischer, Stage stage){
+        clearData();
         Scene scene = new Scene(createContent(Fischer, stage));
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode() == KeyCode.LEFT) {
@@ -290,7 +314,6 @@ public class Main extends Application {
     }
 
     public Scene GameStartMenu(Stage stage){
-        boolean fischer = false;
         File directoryPath = new File(Main.class.getResource("graphics/").getPath());
         String contents[] = directoryPath.list();
 
