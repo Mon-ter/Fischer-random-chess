@@ -1,6 +1,9 @@
 package sample;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -160,6 +163,7 @@ public class Main extends Application {
 
             Move result = tryMove(piece, newX, newY);
             if (result != null) {
+                boolean check = board[newX][newY].getPiece() != null;
                 Note firstMoved = new Note(piece, oldX, oldY, newX, newY);
                 Note secondMoved = null;
                 if (result.type == MoveType.KILL) {
@@ -178,11 +182,12 @@ public class Main extends Application {
                 } else {
                     enPassantXPossibility = -2;
                 }
+                int pieceDuplicationm = 0;
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
-                gameSupervisor.add(annotation);
+                gameSupervisor.add(annotation, check, pieceDuplicationm);
                 if (onMove.getPieceColour() == PieceColour.WHITE) {
                     darkAlivePieces.makeThemReady(board, enPassantXPossibility, darkKing, whiteKing);
                 } else {
@@ -204,6 +209,29 @@ public class Main extends Application {
         return onMove.getGameMode() && piece.getColour() == onMove.getPieceColour();
     }
 
+    public void clearData(){
+        board = new Tile [SQUARE_NUMBER][SQUARE_NUMBER];
+
+        tiles = new Group();
+        pieces = new Group();
+
+        whiteAlivePieces = new Army();
+        darkAlivePieces = new Army();
+
+        doubleCheck = false;
+        check = false;
+
+        enPassantXPossibility = 0;
+
+        graveyard = null;
+
+        whiteKing = null;
+        darkKing = null;
+
+        onMove = null;
+        gameSupervisor = null;
+    }
+
     private Scene createEndingScene(Result result, GameSupervisor gameSupervisor, Stage stage) {
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
@@ -217,6 +245,22 @@ public class Main extends Application {
             note = "it ended with a draw";
         }
         note += "\n now it's time to allow users to save game moves using gameSupervisor";
+        try {
+            File pgnFile = new File("pgn.txt");
+            pgnFile.createNewFile();
+        } catch(IOException e){
+        }
+        try {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            LocalDateTime now = LocalDateTime.now();
+            FileWriter writer = new FileWriter("pgn.txt", true);
+            writer.write(dtf.format(now));
+            writer.write("\n" + gameSupervisor.pgnNotation + "\n\n");
+            writer.close();
+        }catch (IOException e){
+
+        }
+
         Label label = new Label(note);
         Scene scene = new Scene(layout, 300, 300);
 
@@ -229,6 +273,7 @@ public class Main extends Application {
     }
 
     public Scene createGame(boolean Fischer, Stage stage){
+        clearData();
         Scene scene = new Scene(createContent(Fischer, stage));
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode() == KeyCode.LEFT) {
@@ -269,7 +314,6 @@ public class Main extends Application {
     }
 
     public Scene GameStartMenu(Stage stage){
-        boolean fisher = false;
         File directoryPath = new File(Main.class.getResource("graphics/").getPath());
         String contents[] = directoryPath.list();
 
@@ -287,7 +331,7 @@ public class Main extends Application {
             graphicFolder = (String)choiceBox.getValue();
         });
 
-        ToggleButton toggleButton = new ToggleButton("Fisher");
+        ToggleButton toggleButton = new ToggleButton("Fischer");
 
         Button button = new Button("Start New Game");
         button.setOnAction(e -> stage.setScene(createGame(toggleButton.isSelected(), stage)));  

@@ -13,6 +13,12 @@ public class Square {
         return x;
     }
 
+    char getXasChar(){
+        int n = x + 97;
+        char ch = (char)n;
+        return ch;
+    }
+
     int getY() {
         return y;
     }
