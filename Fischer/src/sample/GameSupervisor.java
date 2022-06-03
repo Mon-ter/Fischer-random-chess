@@ -16,21 +16,33 @@ public class GameSupervisor {
         game = new ArrayList<>();
     }
 
-    public void add(Pair<Note, Note> note,boolean check, int pieceDuplication) {
+    private char getShort(PieceKind k){
+        char ch = '\0';
+        switch (k){
+            case KING -> ch = 'K';
+            case ROOK -> ch = 'R';
+            case QUEEN -> ch = 'Q';
+            case BISHOP -> ch = 'B';
+            case KNIGHT -> ch = 'N';
+        }
+        return ch;
+    }
+    public void add(Pair<Note, Note> note,boolean takeOccurred, int pieceDuplication) {
         game.add(note);
         if(counter % 2 == 0){
             pgnNotation += (counter/2+1 + ". ");
         }
         if(note.getKey().piece.getKind() !=  PieceKind.PAWN){
-            pgnNotation += note.getKey().piece.getKind().getName();
-            if (pieceDuplication == 1){
-                pgnNotation += note.getKey().from.getY();
+            char c = getShort(note.getKey().piece.getKind());
+            pgnNotation += c;
+            if (pieceDuplication == 1 && (c == 'R' || c == 'N')){
+                pgnNotation += (7-note.getKey().from.getY()+1);
             }
-            if (pieceDuplication == 2){
+            if (pieceDuplication == 2 && (c == 'R' || c == 'N')){
                 pgnNotation += note.getKey().from.getXasChar();
             }
         }
-        if(check){
+        if(takeOccurred){
             if(note.getKey().piece.getKind() ==  PieceKind.PAWN) {
                 pgnNotation += note.getKey().from.getXasChar();
             }
@@ -50,20 +62,6 @@ public class GameSupervisor {
         return result;
     }
 
-    public String pgnSaver(){
-        int limit = game.size();
-        String pgn = "";
-        for(int i = 0; i < limit; i++){
-            if (i%2 == 0){
-                pgn += (i/2+1);
-            }
-            pgn += " " + game.get(i).getKey().piece.getKind().getName();
-            int n = game.get(i).getKey().to.getX();
-            char ch = (char)(n+65);
-            pgn += (ch + game.get(i).getKey().to.getY());
-        }
-        return pgn;
-    }
 
     public int realSize() {
         return game.size() - 1;

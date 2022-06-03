@@ -46,7 +46,6 @@ public class Main extends Application {
 
     boolean doubleCheck = false;
     boolean check = false;
-
     int enPassantXPossibility;
 
     Square graveyard = null;
@@ -201,9 +200,22 @@ public class Main extends Application {
             int oldX = conversionToSquareMiddle(piece.getOldX());
             int oldY = conversionToSquareMiddle(piece.getOldY());
 
+            int pieceDuplication;
+
             Move result = tryMove(piece, newX, newY);
             if (result != null) {
-                boolean check = board[newX][newY].getPiece() != null;
+                boolean take = board[newX][newY].getPiece() != null;
+                pieceDuplication = 0;
+                for(int i = 0; i < 8; ++i){
+                    if (i != oldY && board[oldX][i].getPiece() != null &&
+                            (board[oldX][i].getPiece().getKind() == piece.getKind() && board[oldX][i].getPiece().getColour() == piece.getColour())){
+                        pieceDuplication = 1;
+                    }
+                    if ( i != oldX && board[i][oldY].getPiece() != null &&
+                            board[i][oldY].getPiece().getKind() == piece.getKind() && board[i][oldY].getPiece().getColour() == piece.getColour()){
+                        pieceDuplication = 2;
+                    }
+                }
                 Note firstMoved = new Note(piece, oldX, oldY, newX, newY);
                 Note secondMoved = null;
                 if (result.type == MoveType.KILL) {
@@ -222,12 +234,11 @@ public class Main extends Application {
                 } else {
                     enPassantXPossibility = -2;
                 }
-                int pieceDuplicationm = 0;
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
-                gameSupervisor.add(annotation, check, pieceDuplicationm);
+                gameSupervisor.add(annotation, take, pieceDuplication);
                 if (onMove.getPieceColour() == PieceColour.WHITE) {
                     darkAlivePieces.makeThemReady(board, enPassantXPossibility, darkKing, whiteKing);
                 } else {
@@ -295,7 +306,14 @@ public class Main extends Application {
             LocalDateTime now = LocalDateTime.now();
             FileWriter writer = new FileWriter("pgn.txt", true);
             writer.write(dtf.format(now));
-            writer.write("\n" + gameSupervisor.pgnNotation + "\n\n");
+            writer.write("\n" + gameSupervisor.pgnNotation);
+            if(result == Result.BlACK){
+                writer.write("0-1\n\n");
+            }else if(result == Result.WHITE){
+                writer.write("1-0\n\n");
+            }else{
+                writer.write("1/2-1/2\n\n");
+            }
             writer.close();
         }catch (IOException e){
 
@@ -406,7 +424,7 @@ public class Main extends Application {
                     public void handle(final ActionEvent e) {
                         File file = fileChooser.showOpenDialog(stage);
                         if (file != null) {
-                            //odpalenie gry z pliku
+                            stage.setScene(createGame(false,stage));
                         }
                     }
                 });
