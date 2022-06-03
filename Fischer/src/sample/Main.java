@@ -7,6 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -26,8 +29,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.Pair;
 
 public class Main extends Application {
@@ -44,6 +49,9 @@ public class Main extends Application {
     Army whiteAlivePieces = new Army();
     Army darkAlivePieces = new Army();
 
+    Clock whiteClock = null;
+    Clock darkClock = null;
+
     boolean doubleCheck = false;
     boolean check = false;
     int enPassantXPossibility;
@@ -56,21 +64,30 @@ public class Main extends Application {
     TurnIndicator onMove = null;
     GameSupervisor gameSupervisor = null;
 
+    public static TimeControl timeControl;
+
     public static Color darkTileColour = Color.TOMATO;
     public static Color lightTileColour = Color.WHITESMOKE;
     public static String graphicFolder = "new";
 
     private Parent createContent(boolean FischerOnes, Stage stage) {
+
+
         BorderPane root = new BorderPane();
         Pane center = new Pane();
         Pane right = new Pane();
         root.setRight(right);
         root.setCenter(center);
 
+
+
         center.setPrefSize(TILE_SIZE * SQUARE_NUMBER, TILE_SIZE * SQUARE_NUMBER);
         center.getChildren().addAll(tiles, pieces);
 
         right.setPrefSize(TILE_SIZE * 3, TILE_SIZE * SQUARE_NUMBER);
+
+
+
         Button draw = new Button("Take draw");
         Button resign = new Button("Resign");
 
@@ -173,6 +190,17 @@ public class Main extends Application {
         darkKing = board [positionCreator.yKing()] [0].getPiece();
         whiteKing = board [positionCreator.yKing()] [7].getPiece();
 
+        if (timeControl != TimeControl.NONE) {
+            whiteClock = new Clock(timeControl, gameSupervisor, stage);
+            darkClock = new Clock(timeControl, gameSupervisor, stage);
+
+            darkClock.getTimer().relocate((TILE_SIZE * 3 - whiteClock.getWidth()) / 2, TILE_SIZE / 2);
+            whiteClock.getTimer().relocate((TILE_SIZE * 3 - darkClock.getWidth()) / 2, TILE_SIZE * SQUARE_NUMBER - 3 * TILE_SIZE / 2);
+
+            right.getChildren().addAll(whiteClock.getTimer(), darkClock.getTimer());
+            whiteClock.play();
+        }
+
         return root;
     }
 
@@ -241,9 +269,16 @@ public class Main extends Application {
                 gameSupervisor.add(annotation, take, pieceDuplication);
                 if (onMove.getPieceColour() == PieceColour.WHITE) {
                     darkAlivePieces.makeThemReady(board, enPassantXPossibility, darkKing, whiteKing);
+                    if (timeControl != TimeControl.NONE) {
+                        whiteClock.stop();
+                        darkClock.play();
+                    }
                 } else {
-
                     whiteAlivePieces.makeThemReady(board, enPassantXPossibility, whiteKing, darkKing);
+                    if (timeControl != TimeControl.NONE) {
+                        darkClock.stop();
+                        whiteClock.play();
+                    }
                 }
                 onMove.switchTurn();
 
@@ -281,7 +316,11 @@ public class Main extends Application {
 
         onMove = null;
         gameSupervisor = null;
+
+        whiteClock = null;
+        darkClock = null;
     }
+
 
     private Scene createEndingScene(Result result, GameSupervisor gameSupervisor, Stage stage) {
         VBox layout = new VBox();
@@ -364,6 +403,13 @@ public class Main extends Application {
         layout.setAlignment(Pos.CENTER);
         Scene gameMenu = new Scene(layout, 640, 640);
 
+        ChoiceBox timeControlBox = new ChoiceBox<TimeControl>();
+        timeControlBox.getItems().addAll(TimeControl.NONE, TimeControl.THREE, TimeControl.THREE_PLUS_TWO, TimeControl.FIVE, TimeControl.FIFTEEN);
+
+        timeControlBox.setOnAction((event) -> {
+            timeControl = (TimeControl) timeControlBox.getValue();
+        });
+
         ChoiceBox choiceBox = new ChoiceBox();
 
         for (String folder : contents) {
@@ -380,7 +426,7 @@ public class Main extends Application {
         button.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
         button.setOnAction(e -> stage.setScene(createGame(toggleButton.isSelected(), stage)));
 
-        layout.getChildren().addAll(choiceBox, toggleButton, button);
+        layout.getChildren().addAll(timeControlBox, choiceBox, toggleButton, button);
 
         return gameMenu;
     }
@@ -437,6 +483,136 @@ public class Main extends Application {
         return reading;
     }
 
+    public class Clock {
+
+        private HBox timer;
+
+        private short tinyTimer;
+
+        private Label tensOfMinutes;
+        private Label onesOfMinutes;
+
+        private Label tensOfSeconds;
+        private Label onesOfSeconds;
+
+        private Label semicolon;
+
+        private Timeline timeline;
+        private long timeLeft;
+
+        private int increment;
+
+        private GameSupervisor gameSupervisor;
+        private Stage stage;
+
+        ArrayList<Label> backupList;
+
+        Clock(TimeControl timeControl, GameSupervisor gameSupervisor, Stage stage) {
+
+            this.gameSupervisor = gameSupervisor;
+            this.stage = stage;
+
+            setTime(timeControl);
+
+            backupList = new ArrayList<>();
+
+            tensOfSeconds = new Label();
+            onesOfSeconds = new Label();
+            tensOfMinutes = new Label();
+            onesOfMinutes = new Label();
+
+            semicolon = new Label(":");
+            semicolon.setPrefSize(Main.TILE_SIZE / 4, Main.TILE_SIZE);
+            semicolon.setFont(new Font("Arial", Main.TILE_SIZE));
+
+            backupList.add(tensOfMinutes);
+            backupList.add(onesOfMinutes);
+            backupList.add(tensOfSeconds);
+            backupList.add(onesOfSeconds);
+
+            initialize();
+            timer = new HBox(tensOfMinutes, onesOfMinutes, semicolon, tensOfSeconds, onesOfSeconds);
+
+            tinyTimer = 0;
+            increment = (timeControl == TimeControl.THREE_PLUS_TWO) ? 2 : 0;
+
+            timeline = new Timeline(new KeyFrame(Duration.millis(10),
+                    e -> {
+                        tinyTimer++;
+                        if (tinyTimer >= 100) {
+                            subtractSecond();
+                            checkEndGame();
+                            writeTimeDown();
+                            tinyTimer = 0;
+                        }
+
+                    }));
+            timeline.setCycleCount(Animation.INDEFINITE);
+        }
+
+        public void stop() {
+            timeline.stop();
+            timeLeft += increment;
+            writeTimeDown();
+        }
+
+
+        public void play() {
+            timeline.play();
+        }
+
+        public HBox getTimer() {
+            return timer;
+        }
+
+        private void initialize() {
+
+            for (Label label : backupList) {
+                label.setPrefSize(Main.TILE_SIZE / 2, Main.TILE_SIZE);
+                label.setFont(new Font("Arial", Main.TILE_SIZE));
+            }
+
+            writeTimeDown();
+        }
+        private void writeTimeDown() {
+            tensOfMinutes.setText(String.valueOf((timeLeft / 60) / 10));
+            onesOfMinutes.setText(String.valueOf((timeLeft / 60) % 10));
+
+            tensOfSeconds.setText(String.valueOf((timeLeft % 60) / 10));
+            onesOfSeconds.setText(String.valueOf((timeLeft % 60) % 10));
+
+        }
+
+        private void subtractSecond() {
+            timeLeft--;
+
+        }
+
+        public double getWidth() {
+            return Main.TILE_SIZE * 2.5;
+        }
+
+        private void setTime(TimeControl timeControl) {
+            if (timeControl == TimeControl.THREE) {
+                timeLeft = 180;
+            } else if (timeControl == TimeControl.FIVE) {
+                timeLeft = 300;
+            } else if (timeControl == TimeControl.FIFTEEN) {
+                timeLeft = 900;
+            } else if (timeControl == TimeControl.THREE_PLUS_TWO) {
+                timeLeft = 180;
+            }
+        }
+
+        private void checkEndGame() {
+            if (timeLeft == 0) {
+                timeline.stop();
+                Result result = (onMove.getPieceColour() == PieceColour.BLACK) ? Result.WHITE : Result.BlACK;
+                stage.setScene(createEndingScene(result, gameSupervisor, stage));
+            }
+        }
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Fischer Chess");
@@ -449,4 +625,5 @@ public class Main extends Application {
 
         Application.launch(args);
     }
+
 }
