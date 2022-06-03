@@ -27,8 +27,8 @@ public class GameSupervisor {
         }
         return ch;
     }
-    public void add(Pair<Note, Note> note,boolean takeOccurred, int pieceDuplication) {
-        game.add(note);
+
+    private void pgnSaver(Pair<Note, Note> note, boolean takeOccurred, int pieceDuplication){
         if(counter % 2 == 0){
             pgnNotation += (counter/2+1 + ". ");
         }
@@ -50,6 +50,10 @@ public class GameSupervisor {
         }
         pgnNotation += note.getKey().to.getXasChar();
         pgnNotation += (7-note.getKey().to.getY()+1) + " ";
+    }
+    public void add(Pair<Note, Note> note,boolean takeOccurred, int pieceDuplication) {
+        game.add(note);
+        pgnSaver(note, takeOccurred, pieceDuplication);
         counter++;
     }
 
