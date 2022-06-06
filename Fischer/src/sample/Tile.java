@@ -28,6 +28,7 @@ public class Tile extends Rectangle {
         colour = isDark ? Main.darkTileColour : Main.lightTileColour;
         setFill(colour);
         piece = null;
+
     }
 
     public void highlight() {

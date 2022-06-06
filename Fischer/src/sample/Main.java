@@ -1,21 +1,27 @@
 package sample;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
+
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ChoiceBox;
@@ -396,6 +402,8 @@ public class Main extends Application {
 
         }
 
+        appendResultToStats(result);
+
         Label label = new Label(note);
         Scene scene = new Scene(layout, 300, 300);
 
@@ -472,14 +480,39 @@ public class Main extends Application {
     public Scene Statistic(Stage stage){
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
-        Scene stats = new Scene(layout, 640, 640);
+        int whiteWins = 0;
+        int blackWins = 0;
+        int draws = 0;
+
+        checkIfStatsFileExists();
+
+        try {
+            File myObj = new File("stats.txt");
+            Scanner myReader = new Scanner(myObj);
+            whiteWins = myReader.nextInt();
+            blackWins = myReader.nextInt();
+            draws = myReader.nextInt();
+            myReader.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
+                new PieChart.Data("White won", whiteWins),
+                new PieChart.Data("Black won", blackWins),
+                new PieChart.Data("Draw", draws)
+        );
+
+        PieChart chart = new PieChart(pieChartData);
+        chart.setTitle("As it stands");
 
         Button button = new Button("Go back");
         button.setOnAction(e -> stage.setScene(MainMenu(stage)));
 
-        layout.getChildren().addAll(button);
+        layout.getChildren().addAll(chart, button);
 
-        return stats;
+        return new Scene(layout, 8 * TILE_SIZE, 8 * TILE_SIZE);
     }
 
     public Scene readFromFileScene(Stage stage){
@@ -681,12 +714,58 @@ public class Main extends Application {
         return new HBox(queen, bishop, knight, rook);
     }
 
+    public void appendResultToStats(Result result) {
+        Integer whiteWins = 0;
+        Integer blackWins = 0;
+        Integer draws = 0;
+        checkIfStatsFileExists();
+        try {
+            File myObj = new File("stats.txt");
+            Scanner myReader = new Scanner(myObj);
+            whiteWins = myReader.nextInt();
+            blackWins = myReader.nextInt();
+            draws = myReader.nextInt();
+            myReader.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        if (result == Result.BLACK) {
+            blackWins++;
+        } else if (result == Result.WHITE) {
+            whiteWins++;
+        } else {
+            draws++;
+        }
+        try {
+            FileWriter writer = new FileWriter("stats.txt", false);
+            writer.write(whiteWins.toString() + " ");;
+            writer.write(blackWins.toString() + " ");
+            writer.write(draws.toString());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece) {
         right.getChildren().remove(promotionBox);
         movingPiece.setKind(buttonKind);
         onMove.switchMode();
     }
 
+    public void checkIfStatsFileExists() {
+        try {
+            File pgnFile = new File("stats.txt");
+            if (!pgnFile.isFile()) {
+                pgnFile.createNewFile();
+                FileWriter writer = new FileWriter("stats.txt", false);
+                writer.write("0 0 0");
+                ;
+                writer.close();
+            }
+        } catch(IOException e){
+        }
+    }
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Fischer Chess");
