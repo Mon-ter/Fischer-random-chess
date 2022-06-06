@@ -8,4 +8,8 @@ public class Move extends Square{
         super(x, y);
         this.type = type;
     }
+
+    public MoveType getType() {
+        return type;
+    }
 }

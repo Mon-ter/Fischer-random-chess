@@ -18,7 +18,9 @@ public class Piece extends StackPane {
     private Square coordinates;
     private ArrayList<Move> possibleMoves;
     private Tile [] [] board;
-
+    private boolean isTargeted;
+    private Army enemyArmy;
+    private Piece ourKing;
     public double getOldX() {
         return oldX;
     }
@@ -30,6 +32,29 @@ public class Piece extends StackPane {
         return kind;
     }
 
+    public void setIsTargeted() {
+        isTargeted = true;
+    }
+
+    public void unsetIsTargeted() {
+        isTargeted = false;
+    }
+
+    public boolean getIsTargeted() {
+        return isTargeted;
+    }
+
+    public void setEnemyArmy(Army enemyArmy) {
+        this.enemyArmy = enemyArmy;
+    }
+
+    public void setOurKing(Piece ourKing) {
+        this.ourKing = ourKing;
+    }
+
+    public ArrayList<Move> getPossibleMoves() {
+        return possibleMoves;
+    }
     public void setKind (PieceKind kind) {
         this.kind = kind;
     }
@@ -48,6 +73,7 @@ public class Piece extends StackPane {
         this.kind = kind;
         this.board = board;
         this.onMove = onMove;
+        this.isTargeted = false;
         coordinates = new Square(x, y);
         possibleMoves = new ArrayList<>();
         move(x, y);
@@ -93,88 +119,89 @@ public class Piece extends StackPane {
         return "sample/graphics/" + Main.graphicFolder + "/" + prefix + rest + extension;
     }
 
-    public void findPossibleMoves(Tile [] [] board, int enPassantXPossibility, Piece ourKing, Piece enemyKing) {
+    public void findPossibleMoves(int enPassantXPossibility, boolean checkMode) {
 
         possibleMoves = new ArrayList<>();
 
-                if (this.getKind() == PieceKind.PAWN) {
-                    int direction = (getColour() == PieceColour.WHITE) ? -1 : 1;
-                    if (checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + direction, enPassantXPossibility, false, false)) {
-                        if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 6) {
-                            checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + 2 * direction, enPassantXPossibility,false, false);
-                        } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 1) {
-                            checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() +  2 * direction, enPassantXPossibility, false, false);
-                        }
-                    }
-                    if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 3) {
-                        checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true);
-                        checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true);
-                    } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 4) {
-                        checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true);
-                        checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true);
-                    }
-                    checkSquareAndAddIt(getCoordinates().getX() + direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true);
-                    checkSquareAndAddIt(getCoordinates().getX() - direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true);
-                } else
 
-                if (this.getKind() == PieceKind.KNIGHT) {
-                    checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 2, enPassantXPossibility,true, false);
-                    checkSquareAndAddIt( coordinates.getX() + 1, coordinates.getY() - 2, enPassantXPossibility,true, false);
-                    checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 2, enPassantXPossibility,true, false);
-                    checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 2, enPassantXPossibility,true, false);
-                    checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() + 1, enPassantXPossibility,true, false);
-                    checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() - 1, enPassantXPossibility,true, false);
-                    checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() + 1, enPassantXPossibility,true, false);
-                    checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() - 1, enPassantXPossibility,true, false);
-                } else {
-
-                    if (this.getKind() == PieceKind.BISHOP || this.getKind() == PieceKind.QUEEN) {
-                        int i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() + i, enPassantXPossibility,true, false)) {
-                            i++;
-                        }
-                        i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY() - i, enPassantXPossibility,true, false)) {
-                            i++;
-                        }
-                        i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() - i, enPassantXPossibility,true, false)) {
-                            i++;
-                        }
-                        i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY() + i, enPassantXPossibility, true, false)) {
-                            i++;
-                        }
-                    }
-
-                    if (this.getKind() == PieceKind.ROOK || this.getKind() == PieceKind.QUEEN) {
-                        int i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() + i, enPassantXPossibility,true, false)) {
-                            i++;
-                        }
-                        i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() - i, enPassantXPossibility,true, false)) {
-                            i++;
-                        }
-                        i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY(), enPassantXPossibility, true, false)) {
-                            i++;
-                        }
-                        i = 1;
-                        while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY(), enPassantXPossibility, true, false)) {
-                            i++;
-                        }
-                    } else if (this.getKind() == PieceKind.KING) {
-                        checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 1, enPassantXPossibility,true, false);
-                        checkSquareAndAddIt( coordinates.getX() + 1, coordinates.getY() - 1, enPassantXPossibility,true, false);
-                        checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 1, enPassantXPossibility,true, false);
-                        checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 1, enPassantXPossibility,true, false);
-                        checkSquareAndAddIt( coordinates.getX(), coordinates.getY() + 1, enPassantXPossibility,true, false);
-                        checkSquareAndAddIt( coordinates.getX(), coordinates.getY() - 1, enPassantXPossibility,true, false);
-                        checkSquareAndAddIt( coordinates.getX() - 1, coordinates.getY(), enPassantXPossibility,true, false);
-                        checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() , enPassantXPossibility,true, false);
-                    }
+        if (this.getKind() == PieceKind.PAWN) {
+            int direction = (getColour() == PieceColour.WHITE) ? -1 : 1;
+            if (checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + direction, enPassantXPossibility, false, false, checkMode)) {
+                if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 6) {
+                    checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + 2 * direction, enPassantXPossibility,false, false, checkMode);
+                } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 1) {
+                    checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() +  2 * direction, enPassantXPossibility, false, false, checkMode);
                 }
+            }
+            if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 3) {
+                checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true, checkMode);
+                checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true, checkMode);
+            } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 4) {
+                checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true, checkMode);
+                checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true, checkMode);
+            }
+            checkSquareAndAddIt(getCoordinates().getX() + direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true, checkMode);
+            checkSquareAndAddIt(getCoordinates().getX() - direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true, checkMode);
+        } else
+
+        if (this.getKind() == PieceKind.KNIGHT) {
+            checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 2, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt( coordinates.getX() + 1, coordinates.getY() - 2, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 2, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 2, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
+        } else {
+
+            if (this.getKind() == PieceKind.BISHOP || this.getKind() == PieceKind.QUEEN) {
+                int i = 1;
+                while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() + i, enPassantXPossibility,true, false, checkMode)) {
+                    i++;
+                }
+                i = 1;
+                while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY() - i, enPassantXPossibility,true, false, checkMode)) {
+                    i++;
+                }
+                i = 1;
+                while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() - i, enPassantXPossibility,true, false, checkMode)) {
+                    i++;
+                }
+                i = 1;
+                while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY() + i, enPassantXPossibility, true, false, checkMode)) {
+                    i++;
+                }
+            }
+
+            if (this.getKind() == PieceKind.ROOK || this.getKind() == PieceKind.QUEEN) {
+                int i = 1;
+                while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() + i, enPassantXPossibility,true, false, checkMode)) {
+                    i++;
+                }
+                i = 1;
+                while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() - i, enPassantXPossibility,true, false, checkMode)) {
+                    i++;
+                }
+                i = 1;
+                while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY(), enPassantXPossibility, true, false, checkMode)) {
+                    i++;
+                }
+                i = 1;
+                while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY(), enPassantXPossibility, true, false, checkMode)) {
+                    i++;
+                }
+            } else if (this.getKind() == PieceKind.KING) {
+                checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt( coordinates.getX() + 1, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt( coordinates.getX(), coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt( coordinates.getX(), coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt( coordinates.getX() - 1, coordinates.getY(), enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() , enPassantXPossibility,true, false, checkMode);
+            }
+        }
 
     }
 
@@ -194,40 +221,81 @@ public class Piece extends StackPane {
     }
 
 
-    public boolean checkSquareAndAddIt(int x, int y, int enPassantXPossibility, boolean canTake, boolean mustTake) {
-        if (0 <= x && x <= 7 && 0 <= y && y <= 7) {
-            if (canTake && mustTake) {
-                if (x == enPassantXPossibility) {
-                    possibleMoves.add(new Move(x, y, MoveType.EN_PASSANT));
-                    return true;
-                } else {
+    public boolean checkSquareAndAddIt(int x, int y, int enPassantXPossibility, boolean canTake, boolean mustTake, boolean checkMode) {
+            if (0 <= x && x <= 7 && 0 <= y && y <= 7) {
+                if (canTake && mustTake) {
+                    if (x == enPassantXPossibility) {
+                        addMove(new Move(x, y, MoveType.EN_PASSANT), checkMode);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                if (mustTake) {
+                    if (board[x][y].hasPiece() && board[x][y].getPiece().getColour() != this.getColour()) {
+                        addMove(new Move(x, y, MoveType.KILL), checkMode);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                if (board[x][y].hasPiece()) {
+                    if (board[x][y].getPiece().getColour() != this.getColour() && canTake) {
+                        addMove(new Move(x, y, MoveType.KILL), checkMode);
+                    }
                     return false;
-                }
-            }
-            if (mustTake) {
-                if (board[x][y].hasPiece() && board[x][y].getPiece().getColour() != this.getColour()) {
-                    possibleMoves.add(new Move(x, y, MoveType.KILL));
-                    return true;
                 } else {
-                    return false;
-                }
-            }
-            if (board[x][y].hasPiece()) {
-                if (board[x][y].getPiece().getColour() != this.getColour() && canTake) {
-                    possibleMoves.add(new Move(x, y, MoveType.KILL));
-                }
-                return false;
-            } else {
-                if (this.getKind() == PieceKind.PAWN && Math.abs(this.coordinates.getY() - y) == 2) {
-                    possibleMoves.add(new Move(x, y, MoveType.PAWN_DOUBLE_MOVE));
-                } else {
-                    possibleMoves.add(new Move(x, y, MoveType.SIMPLE));
-                }
+                    if (this.getKind() == PieceKind.PAWN && Math.abs(this.coordinates.getY() - y) == 2) {
+                        addMove(new Move(x, y, MoveType.PAWN_DOUBLE_MOVE), checkMode);
+                    } else {
+                        addMove(new Move(x, y, MoveType.SIMPLE), checkMode);
+                    }
 
-                return true;
+                    return true;
+                }
+            } else {
+                return false;
+            }
+    }
+
+
+    public void addMove(Move move, boolean checkMode) {
+
+
+        if (!checkMode) {
+
+            if (move.getType() == MoveType.SIMPLE) {
+                board[this.coordinates.getX()][this.coordinates.getY()].setPiece(null);
+                board[move.getX()][move.getY()].setPiece(this);
+                if (!enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)) {
+                    possibleMoves.add(move);
+                }
+                board[this.coordinates.getX()][this.coordinates.getY()].setPiece(this);
+                board[move.getX()][move.getY()].setPiece(null);
+            } else if (move.getType() == MoveType.KILL) {
+                board[this.coordinates.getX()][this.coordinates.getY()].setPiece(null);
+                Piece temp = board[move.getX()][move.getY()].getPiece();
+                temp.setIsTargeted();
+                board[move.getX()][move.getY()].setPiece(this);
+                if (!enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)){
+                    possibleMoves.add(move);
+                }
+                board[this.coordinates.getX()][this.coordinates.getY()].setPiece(this);
+                board[move.getX()][move.getY()].setPiece(temp);
+                temp.unsetIsTargeted();
+            } else if (move.getType() == MoveType.PAWN_DOUBLE_MOVE) {
+                board[this.coordinates.getX()][this.coordinates.getY()].setPiece(null);
+                board[move.getX()][move.getY()].setPiece(this);
+                if (!enemyArmy.lookForChecks(-2, ourKing.coordinates)) {
+                    possibleMoves.add(move);
+                }
+                board[this.coordinates.getX()][this.coordinates.getY()].setPiece(this);
+                board[move.getX()][move.getY()].setPiece(null);
+            } else {
+                possibleMoves.add(move);
             }
         } else {
-            return false;
+            possibleMoves.add(move);
         }
     }
     public void repaint() {

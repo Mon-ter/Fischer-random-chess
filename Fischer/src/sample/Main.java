@@ -39,7 +39,7 @@ public class Main extends Application {
 
     public static final int TILE_SIZE = 80;
     public static final int SQUARE_NUMBER = 8;
-    public static final int PIECE_SIZE = 70;
+    public static final int PIECE_SIZE = 80;
 
     public Tile [][] board = new Tile [SQUARE_NUMBER][SQUARE_NUMBER];
 
@@ -64,7 +64,7 @@ public class Main extends Application {
     TurnIndicator onMove = null;
     GameSupervisor gameSupervisor = null;
 
-    public static TimeControl timeControl;
+    public static TimeControl timeControl = TimeControl.NONE;
 
     public static Color darkTileColour = Color.TOMATO;
     public static Color lightTileColour = Color.WHITESMOKE;
@@ -185,10 +185,18 @@ public class Main extends Application {
             }
         }
 
-        whiteAlivePieces.makeThemReady(board, enPassantXPossibility, whiteKing, darkKing);
-
         darkKing = board [positionCreator.yKing()] [0].getPiece();
         whiteKing = board [positionCreator.yKing()] [7].getPiece();
+
+        whiteAlivePieces.addOurKing(whiteKing);
+        darkAlivePieces.addOurKing(darkKing);
+
+        whiteAlivePieces.addEnemyArmy(darkAlivePieces);
+        darkAlivePieces.addEnemyArmy(whiteAlivePieces);
+
+        whiteAlivePieces.makeThemReady(enPassantXPossibility);
+
+
 
         if (timeControl != TimeControl.NONE) {
             whiteClock = new Clock(timeControl, gameSupervisor, stage);
@@ -267,14 +275,15 @@ public class Main extends Application {
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
                 gameSupervisor.add(annotation, take, pieceDuplication);
+                piece.repaint();
                 if (onMove.getPieceColour() == PieceColour.WHITE) {
-                    darkAlivePieces.makeThemReady(board, enPassantXPossibility, darkKing, whiteKing);
+                    darkAlivePieces.makeThemReady(enPassantXPossibility);
                     if (timeControl != TimeControl.NONE) {
                         whiteClock.stop();
                         darkClock.play();
                     }
                 } else {
-                    whiteAlivePieces.makeThemReady(board, enPassantXPossibility, whiteKing, darkKing);
+                    whiteAlivePieces.makeThemReady(enPassantXPossibility);
                     if (timeControl != TimeControl.NONE) {
                         darkClock.stop();
                         whiteClock.play();
@@ -283,10 +292,11 @@ public class Main extends Application {
                 onMove.switchTurn();
 
             } else {
+                piece.repaint();
                 piece.doNotMove();
             }
 
-            piece.repaint();
+
         });
         return piece;
     }
@@ -471,6 +481,10 @@ public class Main extends Application {
                         File file = fileChooser.showOpenDialog(stage);
                         if (file != null) {
                             stage.setScene(createGame(false,stage));
+                            if (onMove.getGameMode()) {
+                                onMove.switchMode();
+                            }
+
                         }
                     }
                 });

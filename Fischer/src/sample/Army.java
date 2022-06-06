@@ -18,6 +18,20 @@ public class Army {
 
     }
 
+    public void addOurKing(Piece king) {
+        for (Piece piece : pieces) {
+            piece.setOurKing(king);
+        }
+    }
+
+    public void addEnemyArmy(Army enemyArmy) {
+        for (Piece piece : pieces) {
+            piece.setEnemyArmy(enemyArmy);
+        }
+    }
+    public ArrayList<Piece> getPieces() {
+        return pieces;
+    }
     public void kill(Piece takenPiece) {
 
         int limit = pieces.size();
@@ -40,11 +54,27 @@ public class Army {
         takenPiece.removeFromBoard();
     }
 
-    public void makeThemReady(Tile [] [] board, int enPassantXPossibility, Piece ourKing, Piece enemyKing) {
+    public void makeThemReady(int enPassantXPossibility) {
+        for (Piece piece : pieces) {
+            piece.findPossibleMoves(enPassantXPossibility, false);
+        }
+    }
+
+    public boolean lookForChecks(int enPassantXPossibility, Square enemyKingCoords) {
+        for (Piece piece : pieces) {
+            piece.findPossibleMoves(enPassantXPossibility, true);
+        }
 
         for (Piece piece : pieces) {
-            piece.findPossibleMoves(board, enPassantXPossibility, ourKing, enemyKing);
+            if (!piece.getIsTargeted()) {
+                for (Move move : piece.getPossibleMoves()) {
+                    if (move.areTheyTheSame(enemyKingCoords)) {
+                        return true;
+                    }
+                }
+            }
         }
+        return false;
     }
 
 }
