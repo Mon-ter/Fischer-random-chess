@@ -60,6 +60,15 @@ public class Army {
         }
     }
 
+    public boolean doTheyHaveAnyMoves() {
+        for (Piece piece : pieces) {
+            if (piece.getPossibleMoves().size() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean lookForChecks(int enPassantXPossibility, Square enemyKingCoords) {
         for (Piece piece : pieces) {
             piece.findPossibleMoves(enPassantXPossibility, true);

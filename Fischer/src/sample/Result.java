@@ -1,5 +1,5 @@
 package sample;
 
 public enum Result {
-    WHITE, BlACK, DRAW;
+    WHITE, BLACK, DRAW;
 }

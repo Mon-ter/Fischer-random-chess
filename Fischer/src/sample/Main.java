@@ -103,7 +103,7 @@ public class Main extends Application {
         resign.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                stage.setScene(createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BlACK : Result.WHITE, gameSupervisor, stage));
+                stage.setScene(createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BLACK : Result.WHITE, gameSupervisor, stage));
             }
         });
 
@@ -277,16 +277,30 @@ public class Main extends Application {
                 gameSupervisor.add(annotation, take, pieceDuplication);
                 piece.repaint();
                 if (onMove.getPieceColour() == PieceColour.WHITE) {
+                    boolean isThereACheck = whiteAlivePieces.lookForChecks(-2, darkKing.getCoordinates());
+
+
                     darkAlivePieces.makeThemReady(enPassantXPossibility);
-                    if (timeControl != TimeControl.NONE) {
-                        whiteClock.stop();
-                        darkClock.play();
+                    if (darkAlivePieces.doTheyHaveAnyMoves()) {
+                        if (timeControl != TimeControl.NONE) {
+                            whiteClock.stop();
+                            darkClock.play();
+                        }
+                    } else {
+                        Result finalResult = isThereACheck ? Result.WHITE : Result.DRAW;
+                        stage.setScene(createEndingScene(finalResult, gameSupervisor, stage));
                     }
                 } else {
+                    boolean isThereACheck = darkAlivePieces.lookForChecks(-2, whiteKing.getCoordinates());
                     whiteAlivePieces.makeThemReady(enPassantXPossibility);
-                    if (timeControl != TimeControl.NONE) {
-                        darkClock.stop();
-                        whiteClock.play();
+                    if (whiteAlivePieces.doTheyHaveAnyMoves()) {
+                        if (timeControl != TimeControl.NONE) {
+                            darkClock.stop();
+                            whiteClock.play();
+                        }
+                    } else {
+                        Result finalResult = isThereACheck ? Result.BLACK : Result.DRAW;
+                        stage.setScene(createEndingScene(finalResult, gameSupervisor, stage));
                     }
                 }
                 onMove.switchTurn();
@@ -339,7 +353,7 @@ public class Main extends Application {
 
         if (result == Result.WHITE) {
             note = "WHITE won";
-        } else if (result == Result.BlACK) {
+        } else if (result == Result.BLACK) {
             note = "BLACK won";
         } else {
             note = "it ended with a draw";
@@ -356,7 +370,7 @@ public class Main extends Application {
             FileWriter writer = new FileWriter("pgn.txt", true);
             writer.write(dtf.format(now));
             writer.write("\n" + gameSupervisor.pgnNotation);
-            if(result == Result.BlACK){
+            if(result == Result.BLACK){
                 writer.write("0-1\n\n");
             }else if(result == Result.WHITE){
                 writer.write("1-0\n\n");
@@ -621,7 +635,7 @@ public class Main extends Application {
         private void checkEndGame() {
             if (timeLeft == 0) {
                 timeline.stop();
-                Result result = (onMove.getPieceColour() == PieceColour.BLACK) ? Result.WHITE : Result.BlACK;
+                Result result = (onMove.getPieceColour() == PieceColour.BLACK) ? Result.WHITE : Result.BLACK;
                 stage.setScene(createEndingScene(result, gameSupervisor, stage));
             }
         }
