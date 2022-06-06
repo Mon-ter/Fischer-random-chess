@@ -12,4 +12,8 @@ public class Move extends Square{
     public MoveType getType() {
         return type;
     }
+
+    public void setType(MoveType type) {
+        this.type = type;
+    }
 }

@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -22,8 +21,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -40,6 +37,7 @@ public class Main extends Application {
     public static final int TILE_SIZE = 80;
     public static final int SQUARE_NUMBER = 8;
     public static final int PIECE_SIZE = 80;
+    public static final int PROMOTION_BUTTON_SIZE = TILE_SIZE / 2;
 
     public Tile [][] board = new Tile [SQUARE_NUMBER][SQUARE_NUMBER];
 
@@ -64,6 +62,9 @@ public class Main extends Application {
     TurnIndicator onMove = null;
     GameSupervisor gameSupervisor = null;
 
+    private Pane right = null;
+    private HBox promotionBox = null;
+
     public static TimeControl timeControl = TimeControl.NONE;
 
     public static Color darkTileColour = Color.TOMATO;
@@ -72,14 +73,13 @@ public class Main extends Application {
 
     private Parent createContent(boolean FischerOnes, Stage stage) {
 
-
         BorderPane root = new BorderPane();
         Pane center = new Pane();
         Pane right = new Pane();
         root.setRight(right);
         root.setCenter(center);
 
-
+        this.right = right;
 
         center.setPrefSize(TILE_SIZE * SQUARE_NUMBER, TILE_SIZE * SQUARE_NUMBER);
         center.getChildren().addAll(tiles, pieces);
@@ -264,9 +264,24 @@ public class Main extends Application {
                     int yOfVictim = (onMove.getPieceColour() == PieceColour.WHITE) ? newY + 1 : newY - 1;
                     secondMoved = new Note(board [newX] [yOfVictim].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
                     whichArmy.kill(board [newX] [yOfVictim].getPiece());
+                } else if (result.type == MoveType.SIMPLE_PROMOTION) {
+                    promotionBox = promotionHBox(piece);
+                    right.getChildren().add(promotionBox);
+                    promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
+                    onMove.switchMode();
+                } else if (result.type == MoveType.KILL_PROMOTION) {
+                    Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
+                    secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
+                    whichArmy.kill(board [newX] [newY].getPiece());
+                    promotionBox = promotionHBox(piece);
+                    right.getChildren().add(promotionBox);
+                    promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
+                    onMove.switchMode();
                 }
                 if (result.type == MoveType.PAWN_DOUBLE_MOVE) {
                     enPassantXPossibility = newX;
+
+
                 } else {
                     enPassantXPossibility = -2;
                 }
@@ -343,6 +358,9 @@ public class Main extends Application {
 
         whiteClock = null;
         darkClock = null;
+
+        right = null;
+        promotionBox = null;
     }
 
 
@@ -639,6 +657,38 @@ public class Main extends Application {
                 stage.setScene(createEndingScene(result, gameSupervisor, stage));
             }
         }
+    }
+
+    public HBox promotionHBox(Piece piece) {
+        Button queen = new Button("Q");
+        Button bishop = new Button("B");
+        Button knight = new Button("K");
+        Button rook = new Button("R");
+
+        queen.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+        bishop.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+        knight.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+        rook.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
+
+        queen.setOnAction(e -> {
+            doPromotionButtonAction(PieceKind.QUEEN, piece);
+        } );
+        bishop.setOnAction(e -> {
+            doPromotionButtonAction(PieceKind.BISHOP, piece);
+        } );
+        knight.setOnAction(e -> {
+            doPromotionButtonAction(PieceKind.KNIGHT, piece);
+        } );
+        rook.setOnAction(e -> {
+            doPromotionButtonAction(PieceKind.ROOK, piece);
+        } );
+        return new HBox(queen, bishop, knight, rook);
+    }
+
+    public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece) {
+        right.getChildren().remove(promotionBox);
+        movingPiece.setKind(buttonKind);
+        onMove.switchMode();
     }
 
     @Override

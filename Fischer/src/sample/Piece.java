@@ -21,6 +21,7 @@ public class Piece extends StackPane {
     private boolean isTargeted;
     private Army enemyArmy;
     private Piece ourKing;
+    private Rectangle back;
     public double getOldX() {
         return oldX;
     }
@@ -57,6 +58,8 @@ public class Piece extends StackPane {
     }
     public void setKind (PieceKind kind) {
         this.kind = kind;
+        String src = getImageSource(colour, kind, 0);
+        back.setFill(new ImagePattern(new Image(src)));
     }
 
     public PieceColour getColour() {
@@ -77,7 +80,7 @@ public class Piece extends StackPane {
         coordinates = new Square(x, y);
         possibleMoves = new ArrayList<>();
         move(x, y);
-        Rectangle back = new Rectangle(Main.PIECE_SIZE, Main.PIECE_SIZE);
+        this.back = new Rectangle(Main.PIECE_SIZE, Main.PIECE_SIZE);
         back.setTranslateX((Main.TILE_SIZE - Main.PIECE_SIZE) / 2);
         back.setTranslateY((Main.TILE_SIZE - Main.PIECE_SIZE) / 2);
         String src = getImageSource(colour, kind, 0);
@@ -268,6 +271,9 @@ public class Piece extends StackPane {
                 board[this.coordinates.getX()][this.coordinates.getY()].setPiece(null);
                 board[move.getX()][move.getY()].setPiece(this);
                 if (!enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)) {
+                    if (this.getKind() == PieceKind.PAWN && (move.getY() == 0 || move.getY() == 7)) {
+                        move.setType(MoveType.SIMPLE_PROMOTION);
+                    }
                     possibleMoves.add(move);
                 }
                 board[this.coordinates.getX()][this.coordinates.getY()].setPiece(this);
@@ -278,6 +284,9 @@ public class Piece extends StackPane {
                 temp.setIsTargeted();
                 board[move.getX()][move.getY()].setPiece(this);
                 if (!enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)){
+                    if (this.getKind() == PieceKind.PAWN && (move.getY() == 0 || move.getY() == 7)) {
+                        move.setType(MoveType.KILL_PROMOTION);
+                    }
                     possibleMoves.add(move);
                 }
                 board[this.coordinates.getX()][this.coordinates.getY()].setPiece(this);
