@@ -161,27 +161,10 @@ public class Main extends Application {
                 tiles.getChildren().add(tile);
                 board [x] [y] = tile;
 
-                if (y == 1) {
-                    Piece piece = makePiece(PieceColour.BLACK, PieceKind.PAWN, x, y, board, stage);
-                    tile.setPiece(piece);
-                    pieces.getChildren().add(piece);
-                    darkAlivePieces.hire(piece);
-                } else if (y == 6) {
-                    Piece piece = makePiece(PieceColour.WHITE, PieceKind.PAWN, x, y, board, stage);
-                    tile.setPiece(piece);
-                    pieces.getChildren().add(piece);
-                    whiteAlivePieces.hire(piece);
-                } else if (y == 0) {
-                    Piece piece = makePiece(PieceColour.BLACK, positionCreator.retrieveWhichPiece(x), x, y, board, stage);
-                    tile.setPiece(piece);
-                    pieces.getChildren().add(piece);
-                    darkAlivePieces.hire(piece);
-                } else if (y == 7) {
-                    Piece piece = makePiece(PieceColour.WHITE, positionCreator.retrieveWhichPiece(x), x, y, board, stage);
-                    tile.setPiece(piece);
-                    pieces.getChildren().add(piece);
-                    whiteAlivePieces.hire(piece);
+                if (yOfStartingPiecePosition(y)) {
+                    addPieceToBoard(positionCreator, x, y, stage, tile);
                 }
+
             }
         }
 
@@ -210,6 +193,19 @@ public class Main extends Application {
         }
 
         return root;
+    }
+
+    public boolean yOfStartingPiecePosition(int y) {
+        return y == 0 || y == 1 || y == 6 || y == 7;
+    }
+    public void addPieceToBoard(ExCoordinates positionCreator, int x, int y, Stage stage, Tile tile) {
+        PieceColour colour = (y == 6 || y == 7) ? PieceColour.WHITE : PieceColour.BLACK;
+        PieceKind kind = (y == 1 || y == 6) ? PieceKind.PAWN : positionCreator.retrieveWhichPiece(x);
+        Army army = (colour == PieceColour.WHITE) ? whiteAlivePieces : darkAlivePieces;
+        Piece piece = makePiece(colour, kind, x, y, board, stage);
+        tile.setPiece(piece);
+        pieces.getChildren().add(piece);
+        army.hire(piece);
     }
 
     private Move tryMove(Piece piece, int newX, int newY) {

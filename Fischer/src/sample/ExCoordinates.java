@@ -51,8 +51,8 @@ public class ExCoordinates {
 
     }
 
-    public PieceKind retrieveWhichPiece(int y) {
-        return t [y];
+    public PieceKind retrieveWhichPiece(int x) {
+        return t [x];
     }
 
     public int yKing() {
