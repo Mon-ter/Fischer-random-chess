@@ -512,7 +512,8 @@ public class Main extends Application {
                             if (onMove.getGameMode()) {
                                 onMove.switchMode();
                             }
-
+                            GameFile g = new GameFile(gameSupervisor,whiteKing,darkKing,whiteAlivePieces,darkAlivePieces);
+                            g.readMoves(file.getAbsolutePath());
                         }
                     }
                 });
