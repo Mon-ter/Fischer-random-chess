@@ -42,20 +42,34 @@ public class GameFile {
         return oldX - 97;
     }
 
-    private void movePawn(char[] ch){
+    private PieceKind kindDecryptor(char c){
+        PieceKind k = PieceKind.PAWN;
+        switch (c){
+            case 'Q' -> k = PieceKind.QUEEN;
+            case 'N' -> k = PieceKind.KNIGHT;
+            case 'R' -> k = PieceKind.ROOK;
+            case 'B' -> k = PieceKind.BISHOP;
+        }
+        return k;
+    }
+
+    private void movePawn(char[] ch, PieceKind promotion, boolean bitka){
         IntPair pair = squareDecryptor(ch[ch.length-2], ch[ch.length-1]);
+        Note note2 = supervisor.board[pair.x][pair.y].getPiece() == null ? null : new Note(supervisor.board[pair.x][pair.y].getPiece(), pair.x, pair.y, -1,-1);
         int fromY = supervisor.counter % 2 == 0 ? pair.y +1 : pair.y-1;
         int fromX;
-        if(ch.length >= 3){
+        if(bitka){
             fromX = ch[0] < ch[ch.length-2] ? pair.x-1 : pair.x+1;
-            if(supervisor.board[pair.x][pair.y].getPiece() == null){
-                supervisor.board[pair.x][fromY].setPiece(null); //en passant
+            if(supervisor.board[pair.x][pair.y].getPiece() == null){ //en passant
+                Army arm = supervisor.counter % 2 == 0 ? blackPieces : whitePieces;
+                note2 = new Note(supervisor.board[pair.x][fromY].getPiece(), pair.x, pair.y, -1,-1);
+                arm.kill(supervisor.board[pair.x][fromY].getPiece());
+                supervisor.board[pair.x][fromY].setPiece(null);
             }
         } else{
             fromX = pair.x;
             fromY = supervisor.board[pair.x][fromY].getPiece() != null ? fromY : fromY + fromY - pair.y;
         }
-        Note note2 = supervisor.board[pair.x][pair.y].getPiece() == null ? null : new Note(supervisor.board[pair.x][pair.y].getPiece(), pair.x, pair.y, -1,-1);
         Note note = new Note(supervisor.board[fromX][fromY].getPiece(),fromX,fromY, pair.x, pair.y);
         Pair<Note,Note> annotation = new Pair(note, note2);
         if(note2 != null){
@@ -65,10 +79,15 @@ public class GameFile {
                 whitePieces.kill(note2.getPiece());
             }
         }
-        supervisor.board[fromX][fromY].getPiece().move(pair.x, pair.y);
+        Piece piece = supervisor.board[fromX][fromY].getPiece();
+        piece.move(pair.x, pair.y);
+        if(promotion != PieceKind.PAWN) {
+            piece.promote(promotion);
+            piece.setPromotionMoveNumber(supervisor.realSize() + 1);
+        }
         supervisor.board[pair.x][pair.y].setPiece(supervisor.board[fromX][fromY].getPiece());
         supervisor.board[fromX][fromY].setPiece(null);
-        supervisor.add(annotation,false,0);
+        supervisor.add(annotation,false,0, false);
     }
 
     private void movePiece(char[] ch, int conflict, PieceKind kind){
@@ -78,7 +97,7 @@ public class GameFile {
                 kind, pair.x, pair.y, supervisor.board, null);
         piece.setOurKing(supervisor.counter % 2 == 1 ? whiteKing : blackKing);
         piece.setEnemyArmy(supervisor.counter % 2 == 1 ? blackPieces : whitePieces);
-        piece.findPossibleMoves(0,false);
+        piece.findPossibleMoves(0,false, true);
         boolean theOne = false;
         for(Move move : piece.getPossibleMoves()){
             Piece temp = supervisor.board[move.getX()][move.getY()].getPiece();
@@ -97,7 +116,7 @@ public class GameFile {
                 Note note = new Note(piece1, fromX, fromY, pair.x, pair.y);
                 piece1.move(pair.x, pair.y);
                 Pair<Note, Note> p = new Pair(note, note2);
-                supervisor.add(p, false, 0);
+                supervisor.add(p, false, 0, false);
                 if(note2 != null){
                     if(piece1.getColour() == PieceColour.BLACK){
                         whitePieces.kill(note2.getPiece());
@@ -129,7 +148,7 @@ public class GameFile {
             }
         }
         piece.move(pair.x, pair.y);
-        supervisor.add(p,false,0);
+        supervisor.add(p,false,0, false);
         supervisor.board[pair.x][pair.y].setPiece(piece);
         supervisor.board[fromX][fromY].setPiece(null);
     }
@@ -144,8 +163,7 @@ public class GameFile {
     }
 
     private void resolveMove(String move){
-        System.out.println(supervisor.counter + " " + move);
-        move = move.replace("+", "");
+        move = move.replace("+", "").replace("=", "");
         char[] ch = move.toCharArray();
         int conflict = 0;
         if(!(move.contains("x")) && move.length() >3){
@@ -154,7 +172,12 @@ public class GameFile {
             conflict = Character.isLowerCase(ch[1]) ? 1 : 2;
         }
         if(Character.isLowerCase(ch[0])){ //pawn
-           movePawn(ch);
+            PieceKind prom = kindDecryptor(move.charAt(move.length() - 1));
+            if(Character.isUpperCase(ch[ch.length-1])) {
+                move = move.substring(0, move.length() - 1);
+                ch = move.toCharArray();
+            }
+           movePawn(ch, prom,move.contains("x"));
         }else{
             switch(ch[0]){
                 case 'N' -> movePiece(ch,conflict, PieceKind.KNIGHT);
@@ -170,12 +193,18 @@ public class GameFile {
 
     public void readMoves(String filePath){
         try(FileReader reader = new FileReader(filePath)){
+            int sup = 100;
             Scanner sc = new Scanner(reader);
             for(int i = 0; sc.hasNext(); i++){
                 String line = sc.next();
                 if(i%3 != 0) {
+                    System.out.println(supervisor.counter + " " + line);
                     resolveMove(line);
+                    if(supervisor.counter == sup){
+                        System.out.println("CO JEST KURWA");
+                    }
                 }
+                sup = supervisor.counter;
             }
             supervisor.counter--;
         }catch(IOException err){

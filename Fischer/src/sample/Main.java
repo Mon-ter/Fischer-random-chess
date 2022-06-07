@@ -242,6 +242,7 @@ public class Main extends Application {
             Move result = tryMove(piece, newX, newY);
             if (result != null) {
                 boolean take = board[newX][newY].getPiece() != null;
+                boolean promotion = true;
                 pieceDuplication = 0;
                 for(int i = 0; i < 8; ++i){
                     if (i != oldY && board[oldX][i].getPiece() != null &&
@@ -276,6 +277,7 @@ public class Main extends Application {
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
                     piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
+                    promotion = true;
                 } else if (result.type == MoveType.KILL_PROMOTION) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
@@ -285,13 +287,14 @@ public class Main extends Application {
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
                     piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
+                    promotion = true;
                 }
 
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
-                gameSupervisor.add(annotation, take, pieceDuplication);
+                gameSupervisor.add(annotation, take, pieceDuplication, promotion);
 
                 piece.repaint();
 

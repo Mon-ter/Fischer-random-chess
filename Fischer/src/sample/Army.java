@@ -56,7 +56,7 @@ public class Army {
 
     public void makeThemReady(int enPassantXPossibility) {
         for (Piece piece : pieces) {
-            piece.findPossibleMoves(enPassantXPossibility, false);
+            piece.findPossibleMoves(enPassantXPossibility, false, false);
         }
     }
 
@@ -71,7 +71,7 @@ public class Army {
 
     public boolean lookForChecks(int enPassantXPossibility, Square enemyKingCoords) {
         for (Piece piece : pieces) {
-            piece.findPossibleMoves(enPassantXPossibility, true);
+            piece.findPossibleMoves(enPassantXPossibility, true, false);
         }
 
         for (Piece piece : pieces) {

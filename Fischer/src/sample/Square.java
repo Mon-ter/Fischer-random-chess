@@ -15,8 +15,7 @@ public class Square {
 
     char getXasChar(){
         int n = x + 97;
-        char ch = (char)n;
-        return ch;
+        return (char)n;
     }
 
     int getY() {

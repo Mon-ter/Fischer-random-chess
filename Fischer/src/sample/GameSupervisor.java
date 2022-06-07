@@ -28,7 +28,7 @@ public class GameSupervisor {
         return ch;
     }
 
-    private void pgnSaver(Pair<Note, Note> note, boolean takeOccurred, int pieceDuplication){
+    private void pgnSaver(Pair<Note, Note> note, boolean takeOccurred, int pieceDuplication, boolean promotion){
         if(counter % 2 == 0){
             pgnNotation += (counter/2+1 + ". ");
         }
@@ -49,11 +49,15 @@ public class GameSupervisor {
             pgnNotation += "x";
         }
         pgnNotation += note.getKey().to.getXasChar();
-        pgnNotation += (7-note.getKey().to.getY()+1) + " ";
+        pgnNotation += (7-note.getKey().to.getY()+1);
+        if(promotion){
+            pgnNotation += "=" + getShort(note.getKey().piece.getKindAfterPromotion());
+        }
+        pgnNotation += " ";
     }
-    public void add(Pair<Note, Note> note,boolean takeOccurred, int pieceDuplication) {
+    public void add(Pair<Note, Note> note,boolean takeOccurred, int pieceDuplication, boolean promotion) {
         game.add(note);
-        pgnSaver(note, takeOccurred, pieceDuplication);
+        pgnSaver(note, takeOccurred, pieceDuplication, promotion);
         counter++;
     }
 

@@ -24,6 +24,8 @@ public class Piece extends StackPane {
     private PieceKind kindAfterPromotion;
     private int promotionMoveNumber;
 
+    private boolean checkCheck = false;
+
     public double getOldX() {
         return oldX;
     }
@@ -145,10 +147,11 @@ public class Piece extends StackPane {
         return "sample/graphics/" + Main.graphicFolder + "/" + prefix + rest + extension;
     }
 
-    public void findPossibleMoves(int enPassantXPossibility, boolean checkMode) {
+    public void findPossibleMoves(int enPassantXPossibility, boolean checkMode, boolean checkFlag) {
 
         possibleMoves = new ArrayList<>();
 
+        checkCheck = checkFlag;
 
         if (this.getKind() == PieceKind.PAWN) {
             int direction = (getColour() == PieceColour.WHITE) ? -1 : 1;
@@ -293,7 +296,7 @@ public class Piece extends StackPane {
             if (move.getType() == MoveType.SIMPLE) {
                 board[this.coordinates.getX()][this.coordinates.getY()].setPiece(null);
                 board[move.getX()][move.getY()].setPiece(this);
-                if (!enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)) {
+                if (checkCheck || !enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)) {
                     if (this.getKind() == PieceKind.PAWN && (move.getY() == 0 || move.getY() == 7)) {
                         move.setType(MoveType.SIMPLE_PROMOTION);
                     }
@@ -306,7 +309,7 @@ public class Piece extends StackPane {
                 Piece temp = board[move.getX()][move.getY()].getPiece();
                 temp.setIsTargeted();
                 board[move.getX()][move.getY()].setPiece(this);
-                if (!enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)){
+                if (checkCheck || !enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)){
                     if (this.getKind() == PieceKind.PAWN && (move.getY() == 0 || move.getY() == 7)) {
                         move.setType(MoveType.KILL_PROMOTION);
                     }
@@ -318,7 +321,7 @@ public class Piece extends StackPane {
             } else if (move.getType() == MoveType.PAWN_DOUBLE_MOVE) {
                 board[this.coordinates.getX()][this.coordinates.getY()].setPiece(null);
                 board[move.getX()][move.getY()].setPiece(this);
-                if (!enemyArmy.lookForChecks(-2, ourKing.coordinates)) {
+                if (checkCheck || !enemyArmy.lookForChecks(-2, ourKing.coordinates)) {
                     possibleMoves.add(move);
                 }
                 board[this.coordinates.getX()][this.coordinates.getY()].setPiece(this);
