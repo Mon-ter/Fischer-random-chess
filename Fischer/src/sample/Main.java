@@ -242,7 +242,7 @@ public class Main extends Application {
             Move result = tryMove(piece, newX, newY);
             if (result != null) {
                 boolean take = board[newX][newY].getPiece() != null;
-                boolean promotion = true;
+                boolean promotion = false;
                 pieceDuplication = 0;
                 for(int i = 0; i < 8; ++i){
                     if (i != oldY && board[oldX][i].getPiece() != null &&
