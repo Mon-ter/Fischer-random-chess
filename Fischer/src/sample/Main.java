@@ -255,6 +255,11 @@ public class Main extends Application {
                 }
                 Note firstMoved = new Note(piece, oldX, oldY, newX, newY);
                 Note secondMoved = null;
+                if (result.type == MoveType.PAWN_DOUBLE_MOVE) {
+                    enPassantXPossibility = newX;
+                } else {
+                    enPassantXPossibility = -2;
+                }
                 if (result.type == MoveType.KILL) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
@@ -266,7 +271,7 @@ public class Main extends Application {
                     secondMoved = new Note(board [newX] [yOfVictim].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
                     whichArmy.kill(board [newX] [yOfVictim].getPiece());
                 } else if (result.type == MoveType.SIMPLE_PROMOTION) {
-                    promotionBox = promotionHBox(piece);
+                    promotionBox = promotionHBox(piece, stage);
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
                     piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
@@ -275,17 +280,13 @@ public class Main extends Application {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
                     whichArmy.kill(board [newX] [newY].getPiece());
-                    promotionBox = promotionHBox(piece);
+                    promotionBox = promotionHBox(piece, stage);
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
                     piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
                 }
-                if (result.type == MoveType.PAWN_DOUBLE_MOVE) {
-                    enPassantXPossibility = newX;
-                } else {
-                    enPassantXPossibility = -2;
-                }
+
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
                 board[newX][newY].setPiece(piece);
@@ -293,34 +294,10 @@ public class Main extends Application {
                 gameSupervisor.add(annotation, take, pieceDuplication);
 
                 piece.repaint();
-                if (onMove.getPieceColour() == PieceColour.WHITE) {
-                    boolean isThereACheck = whiteAlivePieces.lookForChecks(-2, darkKing.getCoordinates());
 
-
-                    darkAlivePieces.makeThemReady(enPassantXPossibility);
-                    if (darkAlivePieces.doTheyHaveAnyMoves()) {
-                        if (timeControl != TimeControl.NONE) {
-                            whiteClock.stop();
-                            darkClock.play();
-                        }
-                    } else {
-                        Result finalResult = isThereACheck ? Result.WHITE : Result.DRAW;
-                        stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
-                    }
-                } else {
-                    boolean isThereACheck = darkAlivePieces.lookForChecks(-2, whiteKing.getCoordinates());
-                    whiteAlivePieces.makeThemReady(enPassantXPossibility);
-                    if (whiteAlivePieces.doTheyHaveAnyMoves()) {
-                        if (timeControl != TimeControl.NONE) {
-                            darkClock.stop();
-                            whiteClock.play();
-                        }
-                    } else {
-                        Result finalResult = isThereACheck ? Result.BLACK : Result.DRAW;
-                        stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
-                    }
+                if (result.getType() != MoveType.SIMPLE_PROMOTION && result.getType() != MoveType.KILL_PROMOTION) {
+                    postMoveAction(stage);
                 }
-                onMove.switchTurn();
 
             } else {
                 piece.repaint();
@@ -334,6 +311,38 @@ public class Main extends Application {
 
     public boolean isOnMove(Piece piece) {
         return onMove.getGameMode() && piece.getColour() == onMove.getPieceColour();
+    }
+
+
+    public void postMoveAction(Stage stage) {
+        if (onMove.getPieceColour() == PieceColour.WHITE) {
+            boolean isThereACheck = whiteAlivePieces.lookForChecks(-2, darkKing.getCoordinates());
+
+
+            darkAlivePieces.makeThemReady(enPassantXPossibility);
+            if (darkAlivePieces.doTheyHaveAnyMoves()) {
+                if (timeControl != TimeControl.NONE) {
+                    whiteClock.stop();
+                    darkClock.play();
+                }
+            } else {
+                Result finalResult = isThereACheck ? Result.WHITE : Result.DRAW;
+                stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
+            }
+        } else {
+            boolean isThereACheck = darkAlivePieces.lookForChecks(-2, whiteKing.getCoordinates());
+            whiteAlivePieces.makeThemReady(enPassantXPossibility);
+            if (whiteAlivePieces.doTheyHaveAnyMoves()) {
+                if (timeControl != TimeControl.NONE) {
+                    darkClock.stop();
+                    whiteClock.play();
+                }
+            } else {
+                Result finalResult = isThereACheck ? Result.BLACK : Result.DRAW;
+                stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
+            }
+        }
+        onMove.switchTurn();
     }
 
     public void clearData(){
@@ -495,7 +504,7 @@ public class Main extends Application {
         }
     }
 
-    public HBox promotionHBox(Piece piece) {
+    public HBox promotionHBox(Piece piece, Stage stage) {
         Button queen = new Button("Q");
         Button bishop = new Button("B");
         Button knight = new Button("K");
@@ -507,16 +516,16 @@ public class Main extends Application {
         rook.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
 
         queen.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.QUEEN, piece);
+            doPromotionButtonAction(PieceKind.QUEEN, piece, stage);
         } );
         bishop.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.BISHOP, piece);
+            doPromotionButtonAction(PieceKind.BISHOP, piece, stage);
         } );
         knight.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.KNIGHT, piece);
+            doPromotionButtonAction(PieceKind.KNIGHT, piece, stage);
         } );
         rook.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.ROOK, piece);
+            doPromotionButtonAction(PieceKind.ROOK, piece, stage);
         } );
         return new HBox(queen, bishop, knight, rook);
     }
@@ -555,10 +564,11 @@ public class Main extends Application {
         }
     }
 
-    public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece) {
+    public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece, Stage stage) {
         right.getChildren().remove(promotionBox);
         movingPiece.promote(buttonKind);
         onMove.switchMode();
+        postMoveAction(stage);
     }
 
     public void checkIfStatsFileExists() {
@@ -580,7 +590,7 @@ public class Main extends Application {
         primaryStage.setTitle("Fischer Chess");
         primaryStage.getIcons().add(new Image("sample/pawn.png"));
         primaryStage.setResizable(false);
-        
+
         stageManager.OpenMainMenu();
     }
 
