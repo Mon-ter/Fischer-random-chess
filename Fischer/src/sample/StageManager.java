@@ -25,6 +25,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
@@ -105,16 +107,17 @@ public class StageManager{
     public void MainMenu(){
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
+        layout.setSpacing(5);
         Scene menu = new Scene(layout, 640, 640);
 
         Button button = new Button("Start Game");
-        button.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        button.setPrefSize(300, 60);
         button.setOnAction(e -> primaryStage.setScene(GameStartMenu));
         Button button2 = new Button("Game From File");
-        button2.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        button2.setPrefSize(300, 60);
         button2.setOnAction(e -> primaryStage.setScene(readFromFileScene));
         Button button3 = new Button("Statistics");
-        button3.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        button3.setPrefSize(300, 60);
         button3.setOnAction(e -> primaryStage.setScene(Statistics));
 
         layout.getChildren().addAll(button, button2, button3);
@@ -126,34 +129,56 @@ public class StageManager{
         File directoryPath = new File(Main.class.getResource("graphics/").getPath());
         String contents[] = directoryPath.list();
 
-        VBox layout = new VBox();
-        layout.setAlignment(Pos.CENTER);
-        Scene gameMenu = new Scene(layout, 640, 640);
+        //VBox layout = new VBox();
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setVgap(5);
+        grid.setHgap(5);
+        //layout.setAlignment(Pos.CENTER);
+        Scene gameMenu = new Scene(grid, 640, 640);
+
+        Text textTimeControl = new Text("Time Control");
+        Text textPieces = new Text("Pieces Style");
+        Text textGameMode = new Text("Game Mode");
 
         ChoiceBox timeControlBox = new ChoiceBox<TimeControl>();
-        timeControlBox.getItems().addAll(TimeControl.NONE, TimeControl.THREE, TimeControl.THREE_PLUS_TWO, TimeControl.FIVE, TimeControl.FIFTEEN);
+        timeControlBox.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        timeControlBox.getItems().addAll(TimeControl.NONE, TimeControl.THREE, TimeControl.THREE_PLUS_TWO, TimeControl.FIVE, TimeControl.FIFTEEN);        
+        timeControlBox.getSelectionModel().selectFirst();
 
         timeControlBox.setOnAction((event) -> {
             main.timeControl = (TimeControl) timeControlBox.getValue();
         });
 
         ChoiceBox choiceBox = new ChoiceBox();
+        choiceBox.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
 
         for (String folder : contents) {
             choiceBox.getItems().add(folder);
         }
+        choiceBox.getSelectionModel().selectFirst();
 
         choiceBox.setOnAction((event) -> {
             Main.graphicFolder = (String)choiceBox.getValue();
         });
 
+
         ToggleButton toggleButton = new ToggleButton("Fischer");
         toggleButton.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+
         Button button = new Button("Start New Game");
-        button.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        button.setPrefSize(234, Main.PIECE_SIZE / 2);
         button.setOnAction(e -> primaryStage.setScene(createGame(toggleButton.isSelected())));
 
-        layout.getChildren().addAll(timeControlBox, choiceBox, toggleButton, button);
+        //layout.getChildren().addAll(timeControlBox, choiceBox, toggleButton, button);
+
+        grid.add(timeControlBox,1,0);
+        grid.add(choiceBox,1,1);
+        grid.add(toggleButton,1,2);
+        grid.add(button,0,3,2,1);
+        grid.add(textTimeControl,0,0);
+        grid.add(textPieces,0,1);
+        grid.add(textGameMode,0,2);
 
         GameStartMenu = gameMenu;
     }
