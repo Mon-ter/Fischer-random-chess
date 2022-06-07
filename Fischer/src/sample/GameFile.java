@@ -51,7 +51,7 @@ public class GameFile {
         int fromY = supervisor.counter % 2 == 0 ? pair.y +1 : pair.y-1;
         int fromX;
         if(ch.length >= 3){
-            fromX = ch[0] < ch[3] ? pair.x-1 : pair.x+1;
+            fromX = ch[0] < ch[ch.length-2] ? pair.x-1 : pair.x+1;
             if(supervisor.board[pair.x][pair.y].getPiece() == null){
                 supervisor.board[pair.x][fromY].setPiece(null); //en passant
             }
@@ -62,7 +62,15 @@ public class GameFile {
         Note note2 = supervisor.board[pair.x][pair.y].getPiece() == null ? null : new Note(supervisor.board[pair.x][pair.y].getPiece(), pair.x, pair.y, -1,-1);
         Note note = new Note(supervisor.board[fromX][fromY].getPiece(),fromX,fromY, pair.x, pair.y);
         Pair<Note,Note> annotation = new Pair(note, note2);
+        if(note2 != null){
+            if(supervisor.board[pair.x][pair.y].getPiece().getColour() == PieceColour.BLACK){
+                blackPieces.kill(note2.getPiece());
+            }else{
+                whitePieces.kill(note2.getPiece());
+            }
+        }
         supervisor.board[fromX][fromY].getPiece().move(pair.x, pair.y);
+        supervisor.board[pair.x][pair.y].setPiece(supervisor.board[fromX][fromY].getPiece());
         supervisor.board[fromX][fromY].setPiece(null);
         supervisor.add(annotation,false,0);
     }
@@ -89,10 +97,20 @@ public class GameFile {
                 int fromX = move.getX();
                 int fromY = move.getY();
                 piece = null;
-                Note note = new Note(supervisor.board[fromX][fromY].getPiece(), fromX, fromY, pair.x, pair.y);
-                supervisor.board[fromX][fromY].getPiece().move(pair.x, pair.y);
+                Piece piece1 = supervisor.board[fromX][fromY].getPiece();
+                Note note = new Note(piece1, fromX, fromY, pair.x, pair.y);
+                piece1.move(pair.x, pair.y);
                 Pair<Note, Note> p = new Pair(note, note2);
                 supervisor.add(p, false, 0);
+                if(note2 != null){
+                    if(piece1.getColour() == PieceColour.BLACK){
+                        whitePieces.kill(note2.getPiece());
+                    }else{
+                        blackPieces.kill(note2.getPiece());
+                    }
+                }
+                supervisor.board[pair.x][pair.y].setPiece(piece1);
+                supervisor.board[fromX][fromY].setPiece(null);
                 break;
             }
         }
@@ -105,8 +123,17 @@ public class GameFile {
         Note note2 = supervisor.board[pair.x][pair.y].getPiece() == null ? null : new Note(supervisor.board[pair.x][pair.y].getPiece(), pair.x, pair.y, -1,-1);
         Note note = new Note(piece, from.getX(), from.getY(), pair.x, pair.y);
         Pair<Note, Note> p = new Pair(note, note2);
+        if(note2 != null){
+            if(piece.getColour() != PieceColour.BLACK){
+                blackPieces.kill(note2.getPiece());
+            }else{
+                whitePieces.kill(note2.getPiece());
+            }
+        }
         piece.move(pair.x, pair.y);
         supervisor.add(p,false,0);
+        supervisor.board[pair.x][pair.y].setPiece(piece);
+        supervisor.board[from.getX()][from.getY()].setPiece(null);
     }
 
     private void castle (char[] ch){
@@ -119,6 +146,7 @@ public class GameFile {
     }
 
     private void resolveMove(String move){
+        System.out.println(supervisor.counter + " " + move);
         move = move.replace("+", "");
         char[] ch = move.toCharArray();
         int conflict = 0;
