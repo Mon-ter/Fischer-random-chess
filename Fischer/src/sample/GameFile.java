@@ -42,10 +42,6 @@ public class GameFile {
         return oldX - 97;
     }
 
-    private int absol(int x){
-        return x > 0 ? x : -x;
-    }
-
     private void movePawn(char[] ch){
         IntPair pair = squareDecryptor(ch[ch.length-2], ch[ch.length-1]);
         int fromY = supervisor.counter % 2 == 0 ? pair.y +1 : pair.y-1;
@@ -120,8 +116,10 @@ public class GameFile {
         IntPair pair = squareDecryptor(ch[ch.length-2], ch[ch.length-1]);
         Piece piece =  supervisor.counter % 2 == 0 ? whiteKing : blackKing;
         Square from = piece.getCoordinates();
+        int fromX = from.getX();
+        int fromY = from.getY();
         Note note2 = supervisor.board[pair.x][pair.y].getPiece() == null ? null : new Note(supervisor.board[pair.x][pair.y].getPiece(), pair.x, pair.y, -1,-1);
-        Note note = new Note(piece, from.getX(), from.getY(), pair.x, pair.y);
+        Note note = new Note(piece, fromX, fromY, pair.x, pair.y);
         Pair<Note, Note> p = new Pair(note, note2);
         if(note2 != null){
             if(piece.getColour() != PieceColour.BLACK){
@@ -133,7 +131,7 @@ public class GameFile {
         piece.move(pair.x, pair.y);
         supervisor.add(p,false,0);
         supervisor.board[pair.x][pair.y].setPiece(piece);
-        supervisor.board[from.getX()][from.getY()].setPiece(null);
+        supervisor.board[fromX][fromY].setPiece(null);
     }
 
     private void castle (char[] ch){
