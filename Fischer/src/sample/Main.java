@@ -67,6 +67,7 @@ public class Main extends Application {
 
     TurnIndicator onMove = null;
     GameSupervisor gameSupervisor = null;
+    StageManager stageManager = null;
 
     private Pane right = null;
     private HBox promotionBox = null;
@@ -77,8 +78,8 @@ public class Main extends Application {
     public static Color lightTileColour = Color.WHITESMOKE;
     public static String graphicFolder = "new";
 
-    private Parent createContent(boolean FischerOnes, Stage stage) {
-
+    public Parent createContent(boolean FischerOnes, Stage stage) {
+        clearData();
         BorderPane root = new BorderPane();
         Pane center = new Pane();
         Pane right = new Pane();
@@ -92,8 +93,6 @@ public class Main extends Application {
 
         right.setPrefSize(TILE_SIZE * 3, TILE_SIZE * SQUARE_NUMBER);
 
-
-
         Button draw = new Button("Take draw");
         Button resign = new Button("Resign");
 
@@ -102,14 +101,14 @@ public class Main extends Application {
         draw.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                stage.setScene(createEndingScene(Result.DRAW, gameSupervisor, stage));
+                stage.setScene(stageManager.createEndingScene(Result.DRAW, gameSupervisor));
             }
         });
 
         resign.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                stage.setScene(createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BLACK : Result.WHITE, gameSupervisor, stage));
+                stage.setScene(stageManager.createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BLACK : Result.WHITE, gameSupervisor));
             }
         });
 
@@ -256,6 +255,11 @@ public class Main extends Application {
                 }
                 Note firstMoved = new Note(piece, oldX, oldY, newX, newY);
                 Note secondMoved = null;
+                if (result.type == MoveType.PAWN_DOUBLE_MOVE) {
+                    enPassantXPossibility = newX;
+                } else {
+                    enPassantXPossibility = -2;
+                }
                 if (result.type == MoveType.KILL) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
@@ -267,60 +271,33 @@ public class Main extends Application {
                     secondMoved = new Note(board [newX] [yOfVictim].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
                     whichArmy.kill(board [newX] [yOfVictim].getPiece());
                 } else if (result.type == MoveType.SIMPLE_PROMOTION) {
-                    promotionBox = promotionHBox(piece);
+                    promotionBox = promotionHBox(piece, stage);
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
+                    piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
                 } else if (result.type == MoveType.KILL_PROMOTION) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
                     whichArmy.kill(board [newX] [newY].getPiece());
-                    promotionBox = promotionHBox(piece);
+                    promotionBox = promotionHBox(piece, stage);
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
+                    piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
                 }
-                if (result.type == MoveType.PAWN_DOUBLE_MOVE) {
-                    enPassantXPossibility = newX;
 
-
-                } else {
-                    enPassantXPossibility = -2;
-                }
                 piece.move(newX, newY);
                 board[oldX][oldY].setPiece(null);
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
                 gameSupervisor.add(annotation, take, pieceDuplication);
+
                 piece.repaint();
-                if (onMove.getPieceColour() == PieceColour.WHITE) {
-                    boolean isThereACheck = whiteAlivePieces.lookForChecks(-2, darkKing.getCoordinates());
 
-
-                    darkAlivePieces.makeThemReady(enPassantXPossibility);
-                    if (darkAlivePieces.doTheyHaveAnyMoves()) {
-                        if (timeControl != TimeControl.NONE) {
-                            whiteClock.stop();
-                            darkClock.play();
-                        }
-                    } else {
-                        Result finalResult = isThereACheck ? Result.WHITE : Result.DRAW;
-                        stage.setScene(createEndingScene(finalResult, gameSupervisor, stage));
-                    }
-                } else {
-                    boolean isThereACheck = darkAlivePieces.lookForChecks(-2, whiteKing.getCoordinates());
-                    whiteAlivePieces.makeThemReady(enPassantXPossibility);
-                    if (whiteAlivePieces.doTheyHaveAnyMoves()) {
-                        if (timeControl != TimeControl.NONE) {
-                            darkClock.stop();
-                            whiteClock.play();
-                        }
-                    } else {
-                        Result finalResult = isThereACheck ? Result.BLACK : Result.DRAW;
-                        stage.setScene(createEndingScene(finalResult, gameSupervisor, stage));
-                    }
+                if (result.getType() != MoveType.SIMPLE_PROMOTION && result.getType() != MoveType.KILL_PROMOTION) {
+                    postMoveAction(stage);
                 }
-                onMove.switchTurn();
 
             } else {
                 piece.repaint();
@@ -334,6 +311,38 @@ public class Main extends Application {
 
     public boolean isOnMove(Piece piece) {
         return onMove.getGameMode() && piece.getColour() == onMove.getPieceColour();
+    }
+
+
+    public void postMoveAction(Stage stage) {
+        if (onMove.getPieceColour() == PieceColour.WHITE) {
+            boolean isThereACheck = whiteAlivePieces.lookForChecks(-2, darkKing.getCoordinates());
+
+
+            darkAlivePieces.makeThemReady(enPassantXPossibility);
+            if (darkAlivePieces.doTheyHaveAnyMoves()) {
+                if (timeControl != TimeControl.NONE) {
+                    whiteClock.stop();
+                    darkClock.play();
+                }
+            } else {
+                Result finalResult = isThereACheck ? Result.WHITE : Result.DRAW;
+                stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
+            }
+        } else {
+            boolean isThereACheck = darkAlivePieces.lookForChecks(-2, whiteKing.getCoordinates());
+            whiteAlivePieces.makeThemReady(enPassantXPossibility);
+            if (whiteAlivePieces.doTheyHaveAnyMoves()) {
+                if (timeControl != TimeControl.NONE) {
+                    darkClock.stop();
+                    whiteClock.play();
+                }
+            } else {
+                Result finalResult = isThereACheck ? Result.BLACK : Result.DRAW;
+                stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
+            }
+        }
+        onMove.switchTurn();
     }
 
     public void clearData(){
@@ -363,200 +372,6 @@ public class Main extends Application {
 
         right = null;
         promotionBox = null;
-    }
-
-
-    private Scene createEndingScene(Result result, GameSupervisor gameSupervisor, Stage stage) {
-        VBox layout = new VBox();
-        layout.setAlignment(Pos.CENTER);
-        String note;
-
-        if (result == Result.WHITE) {
-            note = "WHITE won";
-        } else if (result == Result.BLACK) {
-            note = "BLACK won";
-        } else {
-            note = "it ended with a draw";
-        }
-        note += "\n now it's time to allow users to save game moves using gameSupervisor";
-        try {
-            File pgnFile = new File("pgn.txt");
-            pgnFile.createNewFile();
-        } catch(IOException e){
-        }
-        try {
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-            LocalDateTime now = LocalDateTime.now();
-            FileWriter writer = new FileWriter("pgn.txt", true);
-            writer.write(dtf.format(now));
-            writer.write("\n" + gameSupervisor.pgnNotation);
-            if(result == Result.BLACK){
-                writer.write("0-1\n\n");
-            }else if(result == Result.WHITE){
-                writer.write("1-0\n\n");
-            }else{
-                writer.write("1/2-1/2\n\n");
-            }
-            writer.close();
-        }catch (IOException e){
-
-        }
-
-        appendResultToStats(result);
-
-        Label label = new Label(note);
-        Scene scene = new Scene(layout, 300, 300);
-
-        Button button = new Button("Start Game");
-        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));
-
-        layout.getChildren().addAll(label, button);
-
-        return scene;
-    }
-
-    public Scene createGame(boolean Fischer, Stage stage){
-        clearData();
-        Scene scene = new Scene(createContent(Fischer, stage));
-        return scene;
-    }
-
-    public Scene MainMenu(Stage stage){
-        VBox layout = new VBox();
-        layout.setAlignment(Pos.CENTER);
-        Scene menu = new Scene(layout, 640, 640);
-
-        Button button = new Button("Start Game");
-        button.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
-        button.setOnAction(e -> stage.setScene(GameStartMenu(stage)));
-        Button button2 = new Button("Game From File");
-        button2.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
-        button2.setOnAction(e -> stage.setScene(readFromFileScene(stage)));
-        Button button3 = new Button("Statistics");
-        button3.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
-        button3.setOnAction(e -> stage.setScene(Statistic(stage)));
-
-        layout.getChildren().addAll(button, button2, button3);
-
-        return menu;
-    }
-
-    public Scene GameStartMenu(Stage stage){
-        File directoryPath = new File(Main.class.getResource("graphics/").getPath());
-        String contents[] = directoryPath.list();
-
-        VBox layout = new VBox();
-        layout.setAlignment(Pos.CENTER);
-        Scene gameMenu = new Scene(layout, 640, 640);
-
-        ChoiceBox timeControlBox = new ChoiceBox<TimeControl>();
-        timeControlBox.getItems().addAll(TimeControl.NONE, TimeControl.THREE, TimeControl.THREE_PLUS_TWO, TimeControl.FIVE, TimeControl.FIFTEEN);
-
-        timeControlBox.setOnAction((event) -> {
-            timeControl = (TimeControl) timeControlBox.getValue();
-        });
-
-        ChoiceBox choiceBox = new ChoiceBox();
-
-        for (String folder : contents) {
-            choiceBox.getItems().add(folder);
-        }
-
-        choiceBox.setOnAction((event) -> {
-            graphicFolder = (String)choiceBox.getValue();
-        });
-
-        ToggleButton toggleButton = new ToggleButton("Fischer");
-        toggleButton.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
-        Button button = new Button("Start New Game");
-        button.setPrefSize(PIECE_SIZE * 2, PIECE_SIZE / 2);
-        button.setOnAction(e -> stage.setScene(createGame(toggleButton.isSelected(), stage)));
-
-        layout.getChildren().addAll(timeControlBox, choiceBox, toggleButton, button);
-
-        return gameMenu;
-    }
-
-    public Scene Statistic(Stage stage){
-        VBox layout = new VBox();
-        layout.setAlignment(Pos.CENTER);
-        int whiteWins = 0;
-        int blackWins = 0;
-        int draws = 0;
-
-        checkIfStatsFileExists();
-
-        try {
-            File myObj = new File("stats.txt");
-            Scanner myReader = new Scanner(myObj);
-            whiteWins = myReader.nextInt();
-            blackWins = myReader.nextInt();
-            draws = myReader.nextInt();
-            myReader.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-
-        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
-                new PieChart.Data("White won", whiteWins),
-                new PieChart.Data("Black won", blackWins),
-                new PieChart.Data("Draw", draws)
-        );
-
-        PieChart chart = new PieChart(pieChartData);
-        chart.setTitle("As it stands");
-
-        Button button = new Button("Go back");
-        button.setOnAction(e -> stage.setScene(MainMenu(stage)));
-
-        layout.getChildren().addAll(chart, button);
-
-        return new Scene(layout, 8 * TILE_SIZE, 8 * TILE_SIZE);
-    }
-
-    public Scene readFromFileScene(Stage stage){
-        File directoryPath = new File(Main.class.getResource("graphics/").getPath());
-        String contents[] = directoryPath.list();
-
-        FileChooser fileChooser = new FileChooser();
-        VBox layout = new VBox();
-        layout.setAlignment(Pos.CENTER);
-        Scene reading = new Scene(layout, 640, 640);
-
-        ChoiceBox choiceBox = new ChoiceBox();
-
-        for (String folder : contents) {
-            choiceBox.getItems().add(folder);
-        }
-
-        choiceBox.setOnAction((event) -> {
-            graphicFolder = (String)choiceBox.getValue();
-        });
-
-        Button getFile = new Button("Open File");
-        getFile.setOnAction(
-                new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(final ActionEvent e) {
-                        File file = fileChooser.showOpenDialog(stage);
-                        if (file != null) {
-                            stage.setScene(createGame(false,stage));
-                            if (onMove.getGameMode()) {
-                                onMove.switchMode();
-                            }
-                            GameFile g = new GameFile(gameSupervisor,whiteKing,darkKing,whiteAlivePieces,darkAlivePieces);
-                            g.readMoves(file.getAbsolutePath());
-                        }
-                    }
-                });
-
-        Button button2 = new Button("Go back");
-        button2.setOnAction(e -> stage.setScene(MainMenu(stage)));
-
-        layout.getChildren().addAll(getFile, button2);
-
-        return reading;
     }
 
     public class Clock {
@@ -684,12 +499,12 @@ public class Main extends Application {
             if (timeLeft == 0) {
                 timeline.stop();
                 Result result = (onMove.getPieceColour() == PieceColour.BLACK) ? Result.WHITE : Result.BLACK;
-                stage.setScene(createEndingScene(result, gameSupervisor, stage));
+                stage.setScene(stageManager.createEndingScene(result, gameSupervisor));
             }
         }
     }
 
-    public HBox promotionHBox(Piece piece) {
+    public HBox promotionHBox(Piece piece, Stage stage) {
         Button queen = new Button("Q");
         Button bishop = new Button("B");
         Button knight = new Button("K");
@@ -701,16 +516,16 @@ public class Main extends Application {
         rook.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
 
         queen.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.QUEEN, piece);
+            doPromotionButtonAction(PieceKind.QUEEN, piece, stage);
         } );
         bishop.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.BISHOP, piece);
+            doPromotionButtonAction(PieceKind.BISHOP, piece, stage);
         } );
         knight.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.KNIGHT, piece);
+            doPromotionButtonAction(PieceKind.KNIGHT, piece, stage);
         } );
         rook.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.ROOK, piece);
+            doPromotionButtonAction(PieceKind.ROOK, piece, stage);
         } );
         return new HBox(queen, bishop, knight, rook);
     }
@@ -748,10 +563,12 @@ public class Main extends Application {
             e.printStackTrace();
         }
     }
-    public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece) {
+
+    public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece, Stage stage) {
         right.getChildren().remove(promotionBox);
-        movingPiece.setKind(buttonKind);
+        movingPiece.promote(buttonKind);
         onMove.switchMode();
+        postMoveAction(stage);
     }
 
     public void checkIfStatsFileExists() {
@@ -761,18 +578,20 @@ public class Main extends Application {
                 pgnFile.createNewFile();
                 FileWriter writer = new FileWriter("stats.txt", false);
                 writer.write("0 0 0");
-                ;
                 writer.close();
             }
         } catch(IOException e){
         }
     }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
+        stageManager = new StageManager(primaryStage, this);
         primaryStage.setTitle("Fischer Chess");
         primaryStage.getIcons().add(new Image("sample/pawn.png"));
-        primaryStage.setScene(MainMenu(primaryStage));
-        primaryStage.show();
+        primaryStage.setResizable(false);
+
+        stageManager.OpenMainMenu();
     }
 
     public static void main(String[] args) {
