@@ -93,6 +93,10 @@ public class GameSupervisor {
                 noteTwo.piece.move(noteTwo.from.getX(), noteTwo.from.getY());
                 board[noteTwo.from.getX()][noteTwo.from.getY()].setPiece(noteTwo.piece);
             }
+            if (counter == noteOne.piece.getPromotionMoveNumber()) {
+
+                noteOne.piece.setKind(PieceKind.PAWN);
+            }
             counter--;
         }
     }
@@ -114,6 +118,9 @@ public class GameSupervisor {
             board[noteOne.to.getX()][noteOne.to.getY()].setPiece(noteOne.piece);
             if (noteOne.from.getX() != -1) {
                 board[noteOne.from.getX()][noteOne.from.getY()].setPiece(null);
+            }
+            if (counter == noteOne.piece.getPromotionMoveNumber()) {
+                noteOne.piece.promote(noteOne.piece.getKindAfterPromotion());
             }
 
         }

@@ -269,6 +269,7 @@ public class Main extends Application {
                     promotionBox = promotionHBox(piece);
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
+                    piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
                 } else if (result.type == MoveType.KILL_PROMOTION) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
@@ -277,6 +278,7 @@ public class Main extends Application {
                     promotionBox = promotionHBox(piece);
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
+                    piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
                 }
                 if (result.type == MoveType.PAWN_DOUBLE_MOVE) {
@@ -289,6 +291,7 @@ public class Main extends Application {
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
                 gameSupervisor.add(annotation, take, pieceDuplication);
+
                 piece.repaint();
                 if (onMove.getPieceColour() == PieceColour.WHITE) {
                     boolean isThereACheck = whiteAlivePieces.lookForChecks(-2, darkKing.getCoordinates());
@@ -554,7 +557,7 @@ public class Main extends Application {
 
     public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece) {
         right.getChildren().remove(promotionBox);
-        movingPiece.setKind(buttonKind);
+        movingPiece.promote(buttonKind);
         onMove.switchMode();
     }
 

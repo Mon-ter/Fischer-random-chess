@@ -21,6 +21,9 @@ public class Piece extends StackPane {
     private Army enemyArmy;
     private Piece ourKing;
     private Rectangle back;
+    private PieceKind kindAfterPromotion;
+    private int promotionMoveNumber;
+
     public double getOldX() {
         return oldX;
     }
@@ -61,6 +64,17 @@ public class Piece extends StackPane {
         back.setFill(new ImagePattern(new Image(src)));
     }
 
+    public PieceKind getKindAfterPromotion() {
+        return kindAfterPromotion;
+    }
+
+    public void promote (PieceKind kind) {
+        this.kind = kind;
+        String src = getImageSource(colour, kind, 0);
+        back.setFill(new ImagePattern(new Image(src)));
+        kindAfterPromotion = kind;
+    }
+
     public PieceColour getColour() {
         return colour;
     }
@@ -76,6 +90,7 @@ public class Piece extends StackPane {
         this.board = board;
         this.onMove = onMove;
         this.isTargeted = false;
+        this.promotionMoveNumber = -2;
         coordinates = new Square(x, y);
         possibleMoves = new ArrayList<>();
         move(x, y);
@@ -100,6 +115,14 @@ public class Piece extends StackPane {
         setOnMouseDragged(e -> {
             relocate(e.getSceneX() - mouseX + oldX, e.getSceneY() - mouseY + oldY);
         });
+    }
+
+    public int getPromotionMoveNumber() {
+        return promotionMoveNumber;
+    }
+
+    public void setPromotionMoveNumber(int promotionMoveNumber) {
+        this.promotionMoveNumber = promotionMoveNumber;
     }
 
     public void move(int x, int y) {
@@ -224,40 +247,40 @@ public class Piece extends StackPane {
 
 
     public boolean checkSquareAndAddIt(int x, int y, int enPassantXPossibility, boolean canTake, boolean mustTake, boolean checkMode) {
-            if (0 <= x && x <= 7 && 0 <= y && y <= 7) {
-                if (canTake && mustTake) {
-                    if (x == enPassantXPossibility) {
-                        addMove(new Move(x, y, MoveType.EN_PASSANT), checkMode);
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-                if (mustTake) {
-                    if (board[x][y].hasPiece() && board[x][y].getPiece().getColour() != this.getColour()) {
-                        addMove(new Move(x, y, MoveType.KILL), checkMode);
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-                if (board[x][y].hasPiece()) {
-                    if (board[x][y].getPiece().getColour() != this.getColour() && canTake) {
-                        addMove(new Move(x, y, MoveType.KILL), checkMode);
-                    }
-                    return false;
-                } else {
-                    if (this.getKind() == PieceKind.PAWN && Math.abs(this.coordinates.getY() - y) == 2) {
-                        addMove(new Move(x, y, MoveType.PAWN_DOUBLE_MOVE), checkMode);
-                    } else {
-                        addMove(new Move(x, y, MoveType.SIMPLE), checkMode);
-                    }
-
+        if (0 <= x && x <= 7 && 0 <= y && y <= 7) {
+            if (canTake && mustTake) {
+                if (x == enPassantXPossibility) {
+                    addMove(new Move(x, y, MoveType.EN_PASSANT), checkMode);
                     return true;
+                } else {
+                    return false;
                 }
-            } else {
-                return false;
             }
+            if (mustTake) {
+                if (board[x][y].hasPiece() && board[x][y].getPiece().getColour() != this.getColour()) {
+                    addMove(new Move(x, y, MoveType.KILL), checkMode);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            if (board[x][y].hasPiece()) {
+                if (board[x][y].getPiece().getColour() != this.getColour() && canTake) {
+                    addMove(new Move(x, y, MoveType.KILL), checkMode);
+                }
+                return false;
+            } else {
+                if (this.getKind() == PieceKind.PAWN && Math.abs(this.coordinates.getY() - y) == 2) {
+                    addMove(new Move(x, y, MoveType.PAWN_DOUBLE_MOVE), checkMode);
+                } else {
+                    addMove(new Move(x, y, MoveType.SIMPLE), checkMode);
+                }
+
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
 
