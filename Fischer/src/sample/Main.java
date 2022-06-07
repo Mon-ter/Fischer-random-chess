@@ -101,14 +101,14 @@ public class Main extends Application {
         draw.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                stage.setScene(stageManager.createEndingScene(Result.DRAW, gameSupervisor));
+                stageManager.OpenEndingScene(Result.DRAW, gameSupervisor);
             }
         });
 
         resign.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                stage.setScene(stageManager.createEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BLACK : Result.WHITE, gameSupervisor));
+                stageManager.OpenEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BLACK : Result.WHITE, gameSupervisor);
             }
         });
 
@@ -327,7 +327,7 @@ public class Main extends Application {
                 }
             } else {
                 Result finalResult = isThereACheck ? Result.WHITE : Result.DRAW;
-                stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
+                stageManager.OpenEndingScene(finalResult, gameSupervisor);
             }
         } else {
             boolean isThereACheck = darkAlivePieces.lookForChecks(-2, whiteKing.getCoordinates());
@@ -339,7 +339,7 @@ public class Main extends Application {
                 }
             } else {
                 Result finalResult = isThereACheck ? Result.BLACK : Result.DRAW;
-                stage.setScene(stageManager.createEndingScene(finalResult, gameSupervisor));
+                stageManager.OpenEndingScene(finalResult, gameSupervisor);
             }
         }
         onMove.switchTurn();
@@ -499,7 +499,7 @@ public class Main extends Application {
             if (timeLeft == 0) {
                 timeline.stop();
                 Result result = (onMove.getPieceColour() == PieceColour.BLACK) ? Result.WHITE : Result.BLACK;
-                stage.setScene(stageManager.createEndingScene(result, gameSupervisor));
+                stageManager.OpenEndingScene(result, gameSupervisor);
             }
         }
     }

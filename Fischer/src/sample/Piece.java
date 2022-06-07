@@ -102,6 +102,7 @@ public class Piece extends StackPane {
         getChildren().addAll(back);
 
         setOnMousePressed(e -> {
+            this.toFront();
             mouseX = e.getSceneX();
             mouseY = e.getSceneY();
 

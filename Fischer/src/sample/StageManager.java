@@ -91,7 +91,8 @@ public class StageManager{
         Label label = new Label(note);
         Scene scene = new Scene(layout, 300, 300);
 
-        Button button = new Button("Start Game");
+        Button button = new Button("Start Game");        
+        button.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
         button.setOnAction(e -> primaryStage.setScene(GameStartMenu));
 
         layout.getChildren().addAll(label, button);
@@ -129,12 +130,11 @@ public class StageManager{
         File directoryPath = new File(Main.class.getResource("graphics/").getPath());
         String contents[] = directoryPath.list();
 
-        //VBox layout = new VBox();
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setVgap(5);
         grid.setHgap(5);
-        //layout.setAlignment(Pos.CENTER);
+        
         Scene gameMenu = new Scene(grid, 640, 640);
 
         Text textTimeControl = new Text("Time Control");
@@ -170,7 +170,6 @@ public class StageManager{
         button.setPrefSize(234, Main.PIECE_SIZE / 2);
         button.setOnAction(e -> primaryStage.setScene(createGame(toggleButton.isSelected())));
 
-        //layout.getChildren().addAll(timeControlBox, choiceBox, toggleButton, button);
 
         grid.add(timeControlBox,1,0);
         grid.add(choiceBox,1,1);
@@ -213,7 +212,8 @@ public class StageManager{
         PieChart chart = new PieChart(pieChartData);
         chart.setTitle("As it stands");
 
-        Button button = new Button("Go back");
+        Button button = new Button("Go back");        
+        button.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
         button.setOnAction(e -> primaryStage.setScene(MainMenu));
 
         layout.getChildren().addAll(chart, button);
@@ -228,9 +228,11 @@ public class StageManager{
         FileChooser fileChooser = new FileChooser();
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
+        layout.setSpacing(5);
         Scene reading = new Scene(layout, 640, 640);
 
         ChoiceBox choiceBox = new ChoiceBox();
+        choiceBox.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
 
         for (String folder : contents) {
             choiceBox.getItems().add(folder);
@@ -239,8 +241,10 @@ public class StageManager{
         choiceBox.setOnAction((event) -> {
             main.graphicFolder = (String)choiceBox.getValue();
         });
+        choiceBox.getSelectionModel().selectFirst();
 
-        Button getFile = new Button("Open File");
+        Button getFile = new Button("Open File");        
+        getFile.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
         getFile.setOnAction(
                 new EventHandler<ActionEvent>() {
                     @Override
@@ -258,9 +262,10 @@ public class StageManager{
                 });
 
         Button button2 = new Button("Go back");
+        button2.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
         button2.setOnAction(e -> primaryStage.setScene(MainMenu));
 
-        layout.getChildren().addAll(getFile, button2);
+        layout.getChildren().addAll(choiceBox, getFile, button2);
 
         readFromFileScene = reading;
     }
@@ -268,6 +273,10 @@ public class StageManager{
     public void OpenMainMenu(){
         primaryStage.setScene(MainMenu);
         primaryStage.show();
+    }
+
+    public void OpenEndingScene(Result result, GameSupervisor gameSupervisor){
+        primaryStage.setScene(createEndingScene(result, gameSupervisor));
     }
 
 }

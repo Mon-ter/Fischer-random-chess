@@ -2,7 +2,6 @@ package sample;
 
 public class Note {
 
-
     Piece piece;
     Square from;
     Square to;
