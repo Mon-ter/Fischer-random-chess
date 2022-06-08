@@ -4,7 +4,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
-
 import java.lang.Math;
 import java.util.ArrayList;
 
@@ -16,7 +15,7 @@ public class Piece extends StackPane {
     private TurnIndicator onMove;
     private Square coordinates;
     private ArrayList<Move> possibleMoves;
-    private Tile [] [] board;
+    private Tile[][] board;
     private boolean isTargeted;
     private Army enemyArmy;
     private Piece ourKing;
@@ -29,10 +28,15 @@ public class Piece extends StackPane {
     public double getOldX() {
         return oldX;
     }
-    public Square getCoordinates() {return coordinates; }
+
+    public Square getCoordinates() {
+        return coordinates;
+    }
+
     public double getOldY() {
         return oldY;
     }
+
     public PieceKind getKind() {
         return kind;
     }
@@ -60,7 +64,8 @@ public class Piece extends StackPane {
     public ArrayList<Move> getPossibleMoves() {
         return possibleMoves;
     }
-    public void setKind (PieceKind kind) {
+
+    public void setKind(PieceKind kind) {
         this.kind = kind;
         String src = getImageSource(colour, kind, 0);
         back.setFill(new ImagePattern(new Image(src)));
@@ -70,7 +75,7 @@ public class Piece extends StackPane {
         return kindAfterPromotion;
     }
 
-    public void promote (PieceKind kind) {
+    public void promote(PieceKind kind) {
         this.kind = kind;
         String src = getImageSource(colour, kind, 0);
         back.setFill(new ImagePattern(new Image(src)));
@@ -82,11 +87,11 @@ public class Piece extends StackPane {
     }
 
     public void removeFromBoard() {
-        board [coordinates.getX()] [coordinates.getY()].setPiece(null);
+        board[coordinates.getX()][coordinates.getY()].setPiece(null);
         this.move(-1, -1);
     }
 
-    public Piece(PieceColour colour, PieceKind kind, int x, int y, Tile [] [] board, TurnIndicator onMove) {
+    public Piece(PieceColour colour, PieceKind kind, int x, int y, Tile[][] board, TurnIndicator onMove) {
         this.colour = colour;
         this.kind = kind;
         this.board = board;
@@ -97,8 +102,8 @@ public class Piece extends StackPane {
         possibleMoves = new ArrayList<>();
         move(x, y);
         this.back = new Rectangle(Main.PIECE_SIZE, Main.PIECE_SIZE);
-        back.setTranslateX((Main.TILE_SIZE - Main.PIECE_SIZE) / 2);
-        back.setTranslateY((Main.TILE_SIZE - Main.PIECE_SIZE) / 2);
+        back.setTranslateX((Main.TILE_SIZE - Main.PIECE_SIZE) / 2.0);
+        back.setTranslateY((Main.TILE_SIZE - Main.PIECE_SIZE) / 2.0);
         String src = getImageSource(colour, kind, 0);
         back.setFill(new ImagePattern(new Image(src)));
         getChildren().addAll(back);
@@ -138,7 +143,8 @@ public class Piece extends StackPane {
     public void controlCastlePossibilities() {
         if (this.getKind() == PieceKind.KING) {
             if (this.getColour() == PieceColour.WHITE) {
-                onMove.unsetWhiteKingNotMoved();;
+                onMove.unsetWhiteKingNotMoved();
+                ;
             } else {
                 onMove.unsetDarkKingNotMoved();
             }
@@ -154,6 +160,7 @@ public class Piece extends StackPane {
             }
         }
     }
+
     public void doNotMove() {
         relocate(oldX, oldY);
     }
@@ -176,44 +183,42 @@ public class Piece extends StackPane {
             int direction = (getColour() == PieceColour.WHITE) ? -1 : 1;
             if (checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + direction, enPassantXPossibility, false, false, checkMode)) {
                 if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 6) {
-                    checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + 2 * direction, enPassantXPossibility,false, false, checkMode);
+                    checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + 2 * direction, enPassantXPossibility, false, false, checkMode);
                 } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 1) {
-                    checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() +  2 * direction, enPassantXPossibility, false, false, checkMode);
+                    checkSquareAndAddIt(getCoordinates().getX(), getCoordinates().getY() + 2 * direction, enPassantXPossibility, false, false, checkMode);
                 }
             }
             if (getColour() == PieceColour.WHITE && getCoordinates().getY() == 3) {
                 checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true, checkMode);
-                checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true, checkMode);
+                checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true, checkMode);
             } else if (getColour() == PieceColour.BLACK && getCoordinates().getY() == 4) {
                 checkSquareAndAddIt(getCoordinates().getX() + 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true, checkMode);
-                checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility,true, true, checkMode);
+                checkSquareAndAddIt(getCoordinates().getX() - 1, getCoordinates().getY() + direction, enPassantXPossibility, true, true, checkMode);
             }
-            checkSquareAndAddIt(getCoordinates().getX() + direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true, checkMode);
-            checkSquareAndAddIt(getCoordinates().getX() - direction, getCoordinates().getY() + direction, enPassantXPossibility,false, true, checkMode);
-        } else
-
-        if (this.getKind() == PieceKind.KNIGHT) {
-            checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 2, enPassantXPossibility,true, false, checkMode);
-            checkSquareAndAddIt( coordinates.getX() + 1, coordinates.getY() - 2, enPassantXPossibility,true, false, checkMode);
-            checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 2, enPassantXPossibility,true, false, checkMode);
-            checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 2, enPassantXPossibility,true, false, checkMode);
-            checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
-            checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
-            checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
-            checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
+            checkSquareAndAddIt(getCoordinates().getX() + direction, getCoordinates().getY() + direction, enPassantXPossibility, false, true, checkMode);
+            checkSquareAndAddIt(getCoordinates().getX() - direction, getCoordinates().getY() + direction, enPassantXPossibility, false, true, checkMode);
+        } else if (this.getKind() == PieceKind.KNIGHT) {
+            checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 2, enPassantXPossibility, true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() - 2, enPassantXPossibility, true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 2, enPassantXPossibility, true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 2, enPassantXPossibility, true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() + 1, enPassantXPossibility, true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() + 2, coordinates.getY() - 1, enPassantXPossibility, true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() + 1, enPassantXPossibility, true, false, checkMode);
+            checkSquareAndAddIt(coordinates.getX() - 2, coordinates.getY() - 1, enPassantXPossibility, true, false, checkMode);
         } else {
 
             if (this.getKind() == PieceKind.BISHOP || this.getKind() == PieceKind.QUEEN) {
                 int i = 1;
-                while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() + i, enPassantXPossibility,true, false, checkMode)) {
+                while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() + i, enPassantXPossibility, true, false, checkMode)) {
                     i++;
                 }
                 i = 1;
-                while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY() - i, enPassantXPossibility,true, false, checkMode)) {
+                while (checkSquareAndAddIt(coordinates.getX() - i, coordinates.getY() - i, enPassantXPossibility, true, false, checkMode)) {
                     i++;
                 }
                 i = 1;
-                while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() - i, enPassantXPossibility,true, false, checkMode)) {
+                while (checkSquareAndAddIt(coordinates.getX() + i, coordinates.getY() - i, enPassantXPossibility, true, false, checkMode)) {
                     i++;
                 }
                 i = 1;
@@ -224,11 +229,11 @@ public class Piece extends StackPane {
 
             if (this.getKind() == PieceKind.ROOK || this.getKind() == PieceKind.QUEEN) {
                 int i = 1;
-                while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() + i, enPassantXPossibility,true, false, checkMode)) {
+                while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() + i, enPassantXPossibility, true, false, checkMode)) {
                     i++;
                 }
                 i = 1;
-                while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() - i, enPassantXPossibility,true, false, checkMode)) {
+                while (checkSquareAndAddIt(coordinates.getX(), coordinates.getY() - i, enPassantXPossibility, true, false, checkMode)) {
                     i++;
                 }
                 i = 1;
@@ -240,14 +245,14 @@ public class Piece extends StackPane {
                     i++;
                 }
             } else if (this.getKind() == PieceKind.KING) {
-                checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
-                checkSquareAndAddIt( coordinates.getX() + 1, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
-                checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
-                checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
-                checkSquareAndAddIt( coordinates.getX(), coordinates.getY() + 1, enPassantXPossibility,true, false, checkMode);
-                checkSquareAndAddIt( coordinates.getX(), coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
-                checkSquareAndAddIt( coordinates.getX() - 1, coordinates.getY(), enPassantXPossibility,true, false, checkMode);
-                checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() , enPassantXPossibility,true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() + 1, enPassantXPossibility, true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() - 1, enPassantXPossibility, true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() + 1, enPassantXPossibility, true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY() - 1, enPassantXPossibility, true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX(), coordinates.getY() + 1, enPassantXPossibility, true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX(), coordinates.getY() - 1, enPassantXPossibility, true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() - 1, coordinates.getY(), enPassantXPossibility, true, false, checkMode);
+                checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY(), enPassantXPossibility, true, false, checkMode);
                 if (!checkMode) {
                     lookForCastle();
                 }
@@ -264,7 +269,7 @@ public class Piece extends StackPane {
             Piece rightRook = whiteColour ? this.onMove.getWhiteRightRook() : this.onMove.getDarkRightRook();
             int limit = whiteColour ? this.onMove.getWhiteRightRook().getCoordinates().getX() : this.onMove.getDarkRightRook().getCoordinates().getX();
             while (i < limit) {
-                if (board [i] [y].hasPiece()) {
+                if (board[i][y].hasPiece()) {
                     break;
                 }
                 i++;
@@ -273,16 +278,16 @@ public class Piece extends StackPane {
                 i = this.getCoordinates().getX() + 1;
                 if (!enemyArmy.lookForChecks(-2, this.getCoordinates())) {
                     while (i <= Main.xKingCastleKingSide) {
-                        if (board [i] [y].getPiece() == rightRook || !board [i] [y].hasPiece() && !enemyArmy.lookForChecks(-2, new Square(i, whiteColour ? Main.yWhite : Main.yDark))) {
+                        if (board[i][y].getPiece() == rightRook || !board[i][y].hasPiece() && !enemyArmy.lookForChecks(-2, new Square(i, whiteColour ? Main.yWhite : Main.yDark))) {
                             i++;
                         } else {
                             break;
                         }
                     }
                     if (i > Main.xKingCastleKingSide) {
-                        if (!board [Main.xRookCastleKingSide] [y].hasPiece() ||
-                                board [Main.xRookCastleKingSide] [y].getPiece() == rightRook
-                        || board [Main.xRookCastleKingSide] [y].getPiece() == ourKing) {
+                        if (!board[Main.xRookCastleKingSide][y].hasPiece() ||
+                                board[Main.xRookCastleKingSide][y].getPiece() == rightRook
+                                || board[Main.xRookCastleKingSide][y].getPiece() == ourKing) {
                             possibleMoves.add(new Move(limit, y, MoveType.CASTLE_KINGSIDE));
                         }
                     }
@@ -294,19 +299,19 @@ public class Piece extends StackPane {
             int limit = whiteColour ? this.onMove.getWhiteLeftRook().getCoordinates().getX() : this.onMove.getDarkLeftRook().getCoordinates().getX();
             Piece leftRook = whiteColour ? this.onMove.getWhiteLeftRook() : this.onMove.getDarkLeftRook();
             while (i > limit) {
-                if (board [i] [y].hasPiece()) {
+                if (board[i][y].hasPiece()) {
                     break;
                 }
                 i--;
             }
             if (i == limit) {
                 if (Main.xKingCastleQueenSide == this.getCoordinates().getX() && !enemyArmy.lookForChecks(-2, this.getCoordinates())) {
-                    if (((!board [Main.xRookCastleQueenSide] [y].hasPiece())
-                            || board [Main.xRookCastleQueenSide] [y].getPiece() == leftRook
-                            || board [Main.xRookCastleQueenSide] [y].getPiece() == ourKing)
-                            && (!board [Main.xKingCastleQueenSide] [y].hasPiece()
-                            || board [Main.xKingCastleQueenSide] [y].getPiece() == ourKing
-                            || board [Main.xKingCastleQueenSide] [y].getPiece() == leftRook)) {
+                    if (((!board[Main.xRookCastleQueenSide][y].hasPiece())
+                            || board[Main.xRookCastleQueenSide][y].getPiece() == leftRook
+                            || board[Main.xRookCastleQueenSide][y].getPiece() == ourKing)
+                            && (!board[Main.xKingCastleQueenSide][y].hasPiece()
+                            || board[Main.xKingCastleQueenSide][y].getPiece() == ourKing
+                            || board[Main.xKingCastleQueenSide][y].getPiece() == leftRook)) {
                         possibleMoves.add(new Move(limit, y, MoveType.CASTLE_QUEENSIDE));
                     }
                 } else {
@@ -314,19 +319,19 @@ public class Piece extends StackPane {
                     i = this.getCoordinates().getX() + indecrement;
                     if (!enemyArmy.lookForChecks(-2, this.getCoordinates())) {
                         while (i != Main.xKingCastleQueenSide) {
-                            if (board [i] [y].getPiece() == leftRook || !board[i][y].hasPiece() && !enemyArmy.lookForChecks(-2, new Square(i, whiteColour ? Main.yWhite : Main.yDark))) {
+                            if (board[i][y].getPiece() == leftRook || !board[i][y].hasPiece() && !enemyArmy.lookForChecks(-2, new Square(i, whiteColour ? Main.yWhite : Main.yDark))) {
                                 i += indecrement;
                             } else {
                                 break;
                             }
                         }
                         if (i == Main.xKingCastleQueenSide && !enemyArmy.lookForChecks(-2, new Square(i, y))) {
-                            if (((!board [Main.xRookCastleQueenSide] [y].hasPiece())
-                                    || board [Main.xRookCastleQueenSide] [y].getPiece() == leftRook
-                                    || board [Main.xRookCastleQueenSide] [y].getPiece() == ourKing)
-                                    && (!board [Main.xKingCastleQueenSide] [y].hasPiece()
-                                    || board [Main.xKingCastleQueenSide] [y].getPiece() == ourKing
-                            || board [Main.xKingCastleQueenSide] [y].getPiece() == leftRook)) {
+                            if (((!board[Main.xRookCastleQueenSide][y].hasPiece())
+                                    || board[Main.xRookCastleQueenSide][y].getPiece() == leftRook
+                                    || board[Main.xRookCastleQueenSide][y].getPiece() == ourKing)
+                                    && (!board[Main.xKingCastleQueenSide][y].hasPiece()
+                                    || board[Main.xKingCastleQueenSide][y].getPiece() == ourKing
+                                    || board[Main.xKingCastleQueenSide][y].getPiece() == leftRook)) {
                                 possibleMoves.add(new Move(limit, y, MoveType.CASTLE_QUEENSIDE));
                             }
                         }
@@ -411,7 +416,7 @@ public class Piece extends StackPane {
                 Piece temp = board[move.getX()][move.getY()].getPiece();
                 temp.setIsTargeted();
                 board[move.getX()][move.getY()].setPiece(this);
-                if (checkCheck || !enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)){
+                if (checkCheck || !enemyArmy.lookForChecks(-2, (this.getKind() == PieceKind.KING) ? new Square(move.getX(), move.getY()) : this.ourKing.coordinates)) {
                     if (this.getKind() == PieceKind.PAWN && (move.getY() == 0 || move.getY() == 7)) {
                         move.setType(MoveType.KILL_PROMOTION);
                     }
@@ -435,11 +440,12 @@ public class Piece extends StackPane {
             possibleMoves.add(move);
         }
     }
+
     public void repaint() {
 
         for (Move move : possibleMoves) {
 
-            board [move.getX()] [move.getY()] .repaint();
+            board[move.getX()][move.getY()].repaint();
 
         }
     }
