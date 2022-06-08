@@ -101,8 +101,8 @@ public class StageManager{
         return scene;
     }
 
-    public Scene createGame(boolean Fischer){
-        Scene scene = new Scene(main.createContent(Fischer, primaryStage));
+    public Scene createGame(boolean Fischer, boolean gameFromFile){
+        Scene scene = new Scene(main.createContent(Fischer, gameFromFile, primaryStage));
         return scene;
     }
 
@@ -169,7 +169,7 @@ public class StageManager{
 
         Button button = new Button("Start New Game");
         button.setPrefSize(234, Main.PIECE_SIZE / 2);
-        button.setOnAction(e -> primaryStage.setScene(createGame(toggleButton.isSelected())));
+        button.setOnAction(e -> primaryStage.setScene(createGame(toggleButton.isSelected(), false)));
 
         Button buttonBack = new Button("Go back");
         buttonBack.setPrefSize(234, Main.PIECE_SIZE / 2);
@@ -255,7 +255,7 @@ public class StageManager{
                     public void handle(final ActionEvent e) {
                         File file = fileChooser.showOpenDialog(primaryStage);
                         if (file != null) {
-                            primaryStage.setScene(createGame(false));
+                            primaryStage.setScene(createGame(false, true));
                             if (main.onMove.getGameMode()) {
                                 main.onMove.switchMode();
                             }

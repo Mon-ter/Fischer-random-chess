@@ -87,7 +87,7 @@ public class Main extends Application {
     public static Color lightTileColour = Color.WHITESMOKE;
     public static String graphicFolder = "new";
 
-    public Parent createContent(boolean FischerOnes, Stage stage) {
+    public Parent createContent(boolean FischerOnes, boolean gameFromFile, Stage stage) {
         clearData();
         BorderPane root = new BorderPane();
         Pane center = new Pane();
@@ -108,29 +108,42 @@ public class Main extends Application {
 
         right.setPrefSize(TILE_SIZE * 3, TILE_SIZE * SQUARE_NUMBER);
 
-        Button draw = new Button("Take draw");
-        Button resign = new Button("Resign");
+        if (gameFromFile) {
+            Button goBack = new Button("Go back to Menu");
+            goBack.setPrefSize(2 * PIECE_SIZE, PIECE_SIZE / 2);
+            goBack.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    stageManager.OpenMainMenu();
+                }
+            });
+            goBack.relocate((TILE_SIZE * 3 - 2 * PIECE_SIZE) / 2, TILE_SIZE * 3);
+            right.getChildren().add(goBack);
+        } else {
 
-        draw.setPrefSize(PIECE_SIZE, PIECE_SIZE / 2);
-        resign.setPrefSize(PIECE_SIZE, PIECE_SIZE / 2);
-        draw.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                stageManager.OpenEndingScene(Result.DRAW, gameSupervisor);
-            }
-        });
+            Button draw = new Button("Take draw");
+            Button resign = new Button("Resign");
 
-        resign.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                stageManager.OpenEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BLACK : Result.WHITE, gameSupervisor);
-            }
-        });
+            draw.setPrefSize(PIECE_SIZE, PIECE_SIZE / 2);
+            resign.setPrefSize(PIECE_SIZE, PIECE_SIZE / 2);
+            draw.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    stageManager.OpenEndingScene(Result.DRAW, gameSupervisor);
+                }
+            });
 
-        HBox manualEndings = new HBox(draw, resign);
-        manualEndings.relocate((TILE_SIZE * 3 - 2 * PIECE_SIZE) / 2, TILE_SIZE * 4);
-        right.getChildren().add(manualEndings);
+            resign.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    stageManager.OpenEndingScene(onMove.getPieceColour() == PieceColour.WHITE ? Result.BLACK : Result.WHITE, gameSupervisor);
+                }
+            });
 
+            HBox manualEndings = new HBox(draw, resign);
+            manualEndings.relocate((TILE_SIZE * 3 - 2 * PIECE_SIZE) / 2, TILE_SIZE * 4);
+            right.getChildren().add(manualEndings);
+        }
         Button backwardReview = new Button("Back");
         Button forwardReview = new Button("Forward");
 
