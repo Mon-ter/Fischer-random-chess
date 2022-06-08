@@ -38,6 +38,15 @@ public class StageManager{
     Scene Statistics;
     Scene readFromFileScene;
 
+    private final double sceneSize = 640;
+    private final double buttonHeight = Main.PIECE_SIZE / 2.0;
+    private final double buttonStandardWidth = Main.PIECE_SIZE * 2;
+    private final double gameStartMenuButtonWidth = 234;
+    private final double mainMenuButtonHeight = 60;
+    private final double mainMenuButtonWidth = 300;
+    private final int endingFontNoteSize = 60;
+    private final int goBackFontSize = 15;
+
     Stage primaryStage;
     Main main;
 
@@ -88,12 +97,12 @@ public class StageManager{
         main.appendResultToStats(result);
 
         Label label = new Label(note);
-        label.setFont(new Font("Arial", 60));
-        Scene scene = new Scene(layout, 640, 640);
+        label.setFont(new Font("Arial", endingFontNoteSize));
+        Scene scene = new Scene(layout, sceneSize, sceneSize);
         Label info = new Label("Your game is already saved for further usage");
-        info.setFont(new Font("Arial", 15));
+        info.setFont(new Font("Arial", goBackFontSize));
         Button button = new Button("Play once again");
-        button.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        button.setPrefSize(buttonStandardWidth, buttonHeight);
         button.setOnAction(e -> primaryStage.setScene(GameStartMenu));
 
         layout.getChildren().addAll(label, info, button);
@@ -110,16 +119,16 @@ public class StageManager{
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
         layout.setSpacing(5);
-        Scene menu = new Scene(layout, 640, 640);
+        Scene menu = new Scene(layout, sceneSize, sceneSize);
 
         Button button = new Button("Start Game");
-        button.setPrefSize(300, 60);
+        button.setPrefSize(mainMenuButtonWidth, mainMenuButtonHeight);
         button.setOnAction(e -> primaryStage.setScene(GameStartMenu));
         Button button2 = new Button("Game From File");
-        button2.setPrefSize(300, 60);
+        button2.setPrefSize(mainMenuButtonWidth, mainMenuButtonHeight);
         button2.setOnAction(e -> primaryStage.setScene(readFromFileScene));
         Button button3 = new Button("Statistics");
-        button3.setPrefSize(300, 60);
+        button3.setPrefSize(mainMenuButtonWidth, mainMenuButtonHeight);
         button3.setOnAction(e -> primaryStage.setScene(Statistics));
 
         layout.getChildren().addAll(button, button2, button3);
@@ -136,14 +145,14 @@ public class StageManager{
         grid.setVgap(5);
         grid.setHgap(5);
         
-        Scene gameMenu = new Scene(grid, 640, 640);
+        Scene gameMenu = new Scene(grid, sceneSize, sceneSize);
 
         Text textTimeControl = new Text("Time Control");
         Text textPieces = new Text("Pieces Style");
         Text textGameMode = new Text("Game Mode");
 
         ChoiceBox timeControlBox = new ChoiceBox<TimeControl>();
-        timeControlBox.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        timeControlBox.setPrefSize(buttonStandardWidth, buttonHeight);
         timeControlBox.getItems().addAll(TimeControl.NONE, TimeControl.THREE, TimeControl.THREE_PLUS_TWO, TimeControl.FIVE, TimeControl.FIFTEEN);        
         timeControlBox.getSelectionModel().selectFirst();
 
@@ -152,7 +161,7 @@ public class StageManager{
         });
 
         ChoiceBox choiceBox = new ChoiceBox();
-        choiceBox.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        choiceBox.setPrefSize(buttonStandardWidth, buttonHeight);
 
         for (String folder : contents) {
             choiceBox.getItems().add(folder);
@@ -165,14 +174,14 @@ public class StageManager{
 
 
         ToggleButton toggleButton = new ToggleButton("Fischer");
-        toggleButton.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        toggleButton.setPrefSize(buttonStandardWidth, buttonHeight);
 
         Button button = new Button("Start New Game");
-        button.setPrefSize(234, Main.PIECE_SIZE / 2);
+        button.setPrefSize(gameStartMenuButtonWidth, buttonHeight);
         button.setOnAction(e -> primaryStage.setScene(createGame(toggleButton.isSelected(), false)));
 
         Button buttonBack = new Button("Go back");
-        buttonBack.setPrefSize(234, Main.PIECE_SIZE / 2);
+        buttonBack.setPrefSize(gameStartMenuButtonWidth, buttonHeight);
         buttonBack.setOnAction(e -> primaryStage.setScene(MainMenu));
 
         grid.add(timeControlBox,1,0);
@@ -217,12 +226,12 @@ public class StageManager{
         chart.setTitle("As it stands");
 
         Button button = new Button("Go back");        
-        button.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        button.setPrefSize(buttonStandardWidth, buttonHeight);
         button.setOnAction(e -> primaryStage.setScene(MainMenu));
 
         layout.getChildren().addAll(chart, button);
 
-        Statistics = new Scene(layout, 8 * Main.TILE_SIZE, 8 * Main.TILE_SIZE);
+        Statistics = new Scene(layout, sceneSize, sceneSize);
     }
 
     public void readFromFileScene(){
@@ -233,10 +242,10 @@ public class StageManager{
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
         layout.setSpacing(5);
-        Scene reading = new Scene(layout, 640, 640);
+        Scene reading = new Scene(layout, sceneSize, sceneSize);
 
         ChoiceBox choiceBox = new ChoiceBox();
-        choiceBox.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        choiceBox.setPrefSize(buttonStandardWidth, buttonHeight);
 
         for (String folder : contents) {
             choiceBox.getItems().add(folder);
@@ -248,7 +257,7 @@ public class StageManager{
         choiceBox.getSelectionModel().selectFirst();
 
         Button getFile = new Button("Open File");        
-        getFile.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
+        getFile.setPrefSize(buttonStandardWidth, buttonHeight);
         getFile.setOnAction(
                 new EventHandler<ActionEvent>() {
                     @Override
@@ -265,11 +274,11 @@ public class StageManager{
                     }
                 });
 
-        Button button2 = new Button("Go back");
-        button2.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
-        button2.setOnAction(e -> primaryStage.setScene(MainMenu));
+        Button goBack = new Button("Go back");
+        goBack.setPrefSize(buttonStandardWidth, buttonHeight);
+        goBack.setOnAction(e -> primaryStage.setScene(MainMenu));
 
-        layout.getChildren().addAll(choiceBox, getFile, button2);
+        layout.getChildren().addAll(choiceBox, getFile, goBack);
 
         readFromFileScene = reading;
     }
