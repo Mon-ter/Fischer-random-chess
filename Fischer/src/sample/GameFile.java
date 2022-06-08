@@ -15,14 +15,12 @@ public class GameFile {
         IntPair(int x, int y){this.x = x; this.y = y;}
     }
 
-    private GameSupervisor supervisor = null;
+    private final GameSupervisor supervisor;
 
-    private Square graveyard = new Square(-1,-1);
-
-    private Piece whiteKing = null;
-    private Piece blackKing = null;
-    private Army whitePieces = null;
-    private Army blackPieces = null;
+    private final Piece whiteKing;
+    private final Piece blackKing;
+    private final Army whitePieces;
+    private final Army blackPieces;
 
     GameFile(GameSupervisor supervisor, Piece whiteKing, Piece blackKing, Army whitePieces, Army blackPieces){
         this.supervisor = supervisor;
@@ -33,13 +31,15 @@ public class GameFile {
     }
 
     private IntPair squareDecryptor(char oldX, char oldY){
-        int x = oldX - 97;
-        int y = 8 - (oldY - 48);
+        int asciForLetter = 97, asciForNumber = 45;
+        int x = oldX - asciForLetter;
+        int y = Main.SQUARE_NUMBER - (oldY - asciForNumber);
         return new IntPair(x,y);
     }
 
     private int intDecryptor(char oldX){
-        return oldX - 97;
+        int asciForLetter = 97;
+        return oldX - asciForLetter;
     }
 
     private PieceKind kindDecryptor(char c){
@@ -87,7 +87,7 @@ public class GameFile {
         }
         supervisor.board[pair.x][pair.y].setPiece(supervisor.board[fromX][fromY].getPiece());
         supervisor.board[fromX][fromY].setPiece(null);
-        supervisor.add(annotation,false,0, false);
+        supervisor.add(annotation,0, null);
     }
 
     private void movePiece(char[] ch, int conflict, PieceKind kind){
@@ -116,7 +116,7 @@ public class GameFile {
                 Note note = new Note(piece1, fromX, fromY, pair.x, pair.y);
                 piece1.move(pair.x, pair.y);
                 Pair<Note, Note> p = new Pair(note, note2);
-                supervisor.add(p, false, 0, false);
+                supervisor.add(p, 0, null);
                 if(note2 != null){
                     if(piece1.getColour() == PieceColour.BLACK){
                         whitePieces.kill(note2.getPiece());
@@ -148,18 +148,35 @@ public class GameFile {
             }
         }
         piece.move(pair.x, pair.y);
-        supervisor.add(p,false,0, false);
+        supervisor.add(p,0,null);
         supervisor.board[pair.x][pair.y].setPiece(piece);
         supervisor.board[fromX][fromY].setPiece(null);
     }
 
     private void castle (char[] ch){
         boolean sup = supervisor.counter % 2 == 0;
-        if(sup){
-            if(ch.length == 3){
-
-            }
+        Piece king = sup ? whiteKing : blackKing;
+        int kingX = king.getCoordinates().getX();
+        int kingY = king.getCoordinates().getY();
+        int side, mult;
+        if(ch.length == 3){
+            side = 3;
+            mult = 1;
+        }else{
+            side = -4;
+            mult = -1;
         }
+        Piece rook = supervisor.board[kingX + side][kingY].getPiece();
+        king.move(kingX + mult * 2, kingY);
+        rook.move(king.getCoordinates().getX()-mult, kingY);
+        supervisor.board[king.getCoordinates().getX()][kingY].setPiece(king);
+        supervisor.board[king.getCoordinates().getX()-mult][kingY].setPiece(rook);
+        supervisor.board[kingX][kingY].setPiece(null);
+        supervisor.board[kingX+side][kingY].setPiece(null);
+        Note note = new Note(king, kingX, kingY, king.getCoordinates().getX(), king.getCoordinates().getY());
+        Note note2 = new Note(rook, kingX+side, kingY, king.getCoordinates().getX()-mult, king.getCoordinates().getY());
+        Pair<Note, Note> p = new Pair(note,note2);
+        supervisor.add(p,0,null);
     }
 
     private void resolveMove(String move){
@@ -193,18 +210,12 @@ public class GameFile {
 
     public void readMoves(String filePath){
         try(FileReader reader = new FileReader(filePath)){
-            int sup = 100;
             Scanner sc = new Scanner(reader);
             for(int i = 0; sc.hasNext(); i++){
                 String line = sc.next();
                 if(i%3 != 0) {
-                    System.out.println(supervisor.counter + " " + line);
                     resolveMove(line);
-                    if(supervisor.counter == sup){
-                        System.out.println("CO JEST KURWA");
-                    }
                 }
-                sup = supervisor.counter;
             }
             supervisor.counter--;
         }catch(IOException err){

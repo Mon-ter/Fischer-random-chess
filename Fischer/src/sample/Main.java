@@ -354,7 +354,7 @@ public class Main extends Application {
                 }
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
-                gameSupervisor.add(annotation, take, pieceDuplication, promotion);
+                gameSupervisor.add(annotation, pieceDuplication ,result);
 
                 piece.repaint();
                 piece.controlCastlePossibilities();

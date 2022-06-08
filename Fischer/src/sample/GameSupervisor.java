@@ -28,36 +28,46 @@ public class GameSupervisor {
         return ch;
     }
 
-    private void pgnSaver(Pair<Note, Note> note, boolean takeOccurred, int pieceDuplication, boolean promotion){
+    private void pgnSaver(Pair<Note, Note> note, int pieceDuplication, Move result){
         if(counter % 2 == 0){
             pgnNotation += (counter/2+1 + ". ");
+        }
+        if(result.type == MoveType.CASTLE_KINGSIDE){
+            pgnNotation += "0-0 ";
+            return;
+        }
+        if(result.type == MoveType.CASTLE_QUEENSIDE){
+            pgnNotation += "0-0-0 ";
+            return;
         }
         if(note.getKey().piece.getKind() !=  PieceKind.PAWN){
             char c = getShort(note.getKey().piece.getKind());
             pgnNotation += c;
-            if (pieceDuplication == 1 && (c == 'R' || c == 'N')){
-                pgnNotation += (7-note.getKey().from.getY()+1);
+            if (pieceDuplication == 1){
+                pgnNotation += (Main.SQUARE_NUMBER-note.getKey().from.getY());
             }
-            if (pieceDuplication == 2 && (c == 'R' || c == 'N')){
+            if (pieceDuplication == 2){
                 pgnNotation += note.getKey().from.getXasChar();
             }
         }
-        if(takeOccurred){
+        if(result.type == MoveType.KILL || result.type == MoveType.KILL_PROMOTION){
             if(note.getKey().piece.getKind() ==  PieceKind.PAWN) {
                 pgnNotation += note.getKey().from.getXasChar();
             }
             pgnNotation += "x";
         }
         pgnNotation += note.getKey().to.getXasChar();
-        pgnNotation += (7-note.getKey().to.getY()+1);
-        if(promotion){
+        pgnNotation += (Main.SQUARE_NUMBER-note.getKey().to.getY());
+        if(result.type == MoveType.KILL_PROMOTION || result.type == MoveType.SIMPLE_PROMOTION){
             pgnNotation += "=" + getShort(note.getKey().piece.getKindAfterPromotion());
         }
         pgnNotation += " ";
     }
-    public void add(Pair<Note, Note> note,boolean takeOccurred, int pieceDuplication, boolean promotion) {
+    public void add(Pair<Note, Note> note, int pieceDuplication, Move result) {
         game.add(note);
-        pgnSaver(note, takeOccurred, pieceDuplication, promotion);
+        if(result != null) {
+            pgnSaver(note, pieceDuplication, result);
+        }
         counter++;
     }
 
