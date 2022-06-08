@@ -7,7 +7,7 @@ public class Tile extends Rectangle {
 
     private Piece piece;
     private final Color highlightColour = Color.YELLOW;
-    Color colour;
+    private final Color colour;
 
     public boolean hasPiece() {
         return piece != null;
