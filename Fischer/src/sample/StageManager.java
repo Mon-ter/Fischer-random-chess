@@ -56,13 +56,12 @@ public class StageManager{
         String note;
 
         if (result == Result.WHITE) {
-            note = "WHITE won";
+            note = "WHITE won!";
         } else if (result == Result.BLACK) {
-            note = "BLACK won";
+            note = "BLACK won!";
         } else {
-            note = "it ended with a draw";
+            note = "it ended with a draw!";
         }
-        note += "\n now it's time to allow users to save game moves using gameSupervisor";
         try {
             File pgnFile = new File("pgn.txt");
             pgnFile.createNewFile();
@@ -89,14 +88,16 @@ public class StageManager{
         main.appendResultToStats(result);
 
         Label label = new Label(note);
-        Scene scene = new Scene(layout, 300, 300);
-
-        Button button = new Button("Start Game");        
+        label.setFont(new Font("Arial", 60));
+        Scene scene = new Scene(layout, 640, 640);
+        Label info = new Label("Your game is already saved for further usage");
+        info.setFont(new Font("Arial", 15));
+        Button button = new Button("Play once again");
         button.setPrefSize(Main.PIECE_SIZE * 2, Main.PIECE_SIZE / 2);
         button.setOnAction(e -> primaryStage.setScene(GameStartMenu));
 
-        layout.getChildren().addAll(label, button);
-
+        layout.getChildren().addAll(label, info, button);
+        layout.setSpacing(Main.PROMOTION_BUTTON_SIZE);
         return scene;
     }
 
