@@ -135,6 +135,25 @@ public class Piece extends StackPane {
         relocate(oldX, oldY);
     }
 
+    public void controlCastlePossibilities() {
+        if (this.getKind() == PieceKind.KING) {
+            if (this.getColour() == PieceColour.WHITE) {
+                onMove.unsetWhiteKingNotMoved();;
+            } else {
+                onMove.unsetDarkKingNotMoved();
+            }
+        } else if (this.getKind() == PieceKind.ROOK) {
+            if (this == onMove.getWhiteRightRook()) {
+                onMove.unsetWhiteRightRookNotMoved();
+            } else if (this == onMove.getWhiteLeftRook()) {
+                onMove.unsetWhiteLeftRookNotMoved();
+            } else if (this == onMove.getDarkRightRook()) {
+                onMove.unsetDarkRightRookNotMoved();
+            } else if (this == onMove.getDarkLeftRook()) {
+                onMove.unsetDarkLeftRookNotMoved();
+            }
+        }
+    }
     public void doNotMove() {
         relocate(oldX, oldY);
     }
@@ -229,9 +248,92 @@ public class Piece extends StackPane {
                 checkSquareAndAddIt( coordinates.getX(), coordinates.getY() - 1, enPassantXPossibility,true, false, checkMode);
                 checkSquareAndAddIt( coordinates.getX() - 1, coordinates.getY(), enPassantXPossibility,true, false, checkMode);
                 checkSquareAndAddIt(coordinates.getX() + 1, coordinates.getY() , enPassantXPossibility,true, false, checkMode);
+                if (!checkMode) {
+                    lookForCastle();
+                }
             }
         }
 
+    }
+
+    public void lookForCastle() {
+        boolean whiteColour = this.getColour() == PieceColour.WHITE;
+        int y = whiteColour ? Main.yWhite : Main.yDark;
+        if (whiteColour ? onMove.canWhiteCastleKingSide() : onMove.canBlackCastleKingSide()) {
+            int i = this.getCoordinates().getX() + 1;
+            Piece rightRook = whiteColour ? this.onMove.getWhiteRightRook() : this.onMove.getDarkRightRook();
+            int limit = whiteColour ? this.onMove.getWhiteRightRook().getCoordinates().getX() : this.onMove.getDarkRightRook().getCoordinates().getX();
+            while (i < limit) {
+                if (board [i] [y].hasPiece()) {
+                    break;
+                }
+                i++;
+            }
+            if (i == limit) {
+                i = this.getCoordinates().getX() + 1;
+                if (!enemyArmy.lookForChecks(-2, this.getCoordinates())) {
+                    while (i <= Main.xKingCastleKingSide) {
+                        if (board [i] [y].getPiece() == rightRook || !board [i] [y].hasPiece() && !enemyArmy.lookForChecks(-2, new Square(i, whiteColour ? Main.yWhite : Main.yDark))) {
+                            i++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (i > Main.xKingCastleKingSide) {
+                        if (!board [Main.xRookCastleKingSide] [y].hasPiece() ||
+                                board [Main.xRookCastleKingSide] [y].getPiece() == rightRook
+                        || board [Main.xRookCastleKingSide] [y].getPiece() == ourKing) {
+                            possibleMoves.add(new Move(limit, y, MoveType.CASTLE_KINGSIDE));
+                        }
+                    }
+                }
+            }
+        }
+        if (whiteColour ? onMove.canWhiteCastleQueenSide() : onMove.canBlackCastleQueenSide()) {
+            int i = this.getCoordinates().getX() - 1;
+            int limit = whiteColour ? this.onMove.getWhiteLeftRook().getCoordinates().getX() : this.onMove.getDarkLeftRook().getCoordinates().getX();
+            Piece leftRook = whiteColour ? this.onMove.getWhiteLeftRook() : this.onMove.getDarkLeftRook();
+            while (i > limit) {
+                if (board [i] [y].hasPiece()) {
+                    break;
+                }
+                i--;
+            }
+            if (i == limit) {
+                if (Main.xKingCastleQueenSide == this.getCoordinates().getX() && !enemyArmy.lookForChecks(-2, this.getCoordinates())) {
+                    if (((!board [Main.xRookCastleQueenSide] [y].hasPiece())
+                            || board [Main.xRookCastleQueenSide] [y].getPiece() == leftRook
+                            || board [Main.xRookCastleQueenSide] [y].getPiece() == ourKing)
+                            && (!board [Main.xKingCastleQueenSide] [y].hasPiece()
+                            || board [Main.xKingCastleQueenSide] [y].getPiece() == ourKing
+                            || board [Main.xKingCastleQueenSide] [y].getPiece() == leftRook)) {
+                        possibleMoves.add(new Move(limit, y, MoveType.CASTLE_QUEENSIDE));
+                    }
+                } else {
+                    int indecrement = Main.xKingCastleQueenSide < this.getCoordinates().getX() ? -1 : 1;
+                    i = this.getCoordinates().getX() + indecrement;
+                    if (!enemyArmy.lookForChecks(-2, this.getCoordinates())) {
+                        while (i != Main.xKingCastleQueenSide) {
+                            if (board [i] [y].getPiece() == leftRook || !board[i][y].hasPiece() && !enemyArmy.lookForChecks(-2, new Square(i, whiteColour ? Main.yWhite : Main.yDark))) {
+                                i += indecrement;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (i == Main.xKingCastleQueenSide && !enemyArmy.lookForChecks(-2, new Square(i, y))) {
+                            if (((!board [Main.xRookCastleQueenSide] [y].hasPiece())
+                                    || board [Main.xRookCastleQueenSide] [y].getPiece() == leftRook
+                                    || board [Main.xRookCastleQueenSide] [y].getPiece() == ourKing)
+                                    && (!board [Main.xKingCastleQueenSide] [y].hasPiece()
+                                    || board [Main.xKingCastleQueenSide] [y].getPiece() == ourKing
+                            || board [Main.xKingCastleQueenSide] [y].getPiece() == leftRook)) {
+                                possibleMoves.add(new Move(limit, y, MoveType.CASTLE_QUEENSIDE));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public Move isMoveLegit(Square attempt) {

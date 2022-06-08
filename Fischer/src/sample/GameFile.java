@@ -177,7 +177,7 @@ public class GameFile {
                 move = move.substring(0, move.length() - 1);
                 ch = move.toCharArray();
             }
-           movePawn(ch, prom,move.contains("x"));
+            movePawn(ch, prom,move.contains("x"));
         }else{
             switch(ch[0]){
                 case 'N' -> movePiece(ch,conflict, PieceKind.KNIGHT);

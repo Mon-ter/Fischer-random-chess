@@ -74,4 +74,26 @@ public class ExCoordinates {
         return -1;
 
     }
+
+    public int yLRook() {
+        int i = 0;
+        while (i < Main.SQUARE_NUMBER) {
+            if (t [i] == PieceKind.ROOK) {
+                return i;
+            }
+            i++;
+        }
+        return i;
+    }
+
+    public int yRRook() {
+        int i = Main.SQUARE_NUMBER - 1;
+        while (i >= 0) {
+            if (t [i] == PieceKind.ROOK) {
+                return i;
+            }
+            i--;
+        }
+        return i;
+    }
 }

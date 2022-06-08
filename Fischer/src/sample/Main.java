@@ -72,6 +72,15 @@ public class Main extends Application {
     private Pane right = null;
     private HBox promotionBox = null;
 
+    public static final int xKingCastleKingSide = 6;
+    public static final int xRookCastleKingSide = 5;
+
+    public static final int xKingCastleQueenSide = 2;
+    public static final int xRookCastleQueenSide = 3;
+
+    public static final int yWhite = 7;
+    public static final int yDark = 0;
+
     public static TimeControl timeControl = TimeControl.NONE;
 
     public static Color darkTileColour = Color.TOMATO;
@@ -179,6 +188,9 @@ public class Main extends Application {
         whiteAlivePieces.addOurKing(whiteKing);
         darkAlivePieces.addOurKing(darkKing);
 
+        onMove.findRooksAndKings(board [positionCreator.yLRook()] [yWhite].getPiece(), board [positionCreator.yKing()] [yWhite].getPiece(), board [positionCreator.yRRook()] [yWhite].getPiece(),
+                board [positionCreator.yLRook()] [yDark].getPiece(), board [positionCreator.yKing()] [yDark].getPiece(), board [positionCreator.yRRook()] [yDark].getPiece());
+
         whiteAlivePieces.addEnemyArmy(darkAlivePieces);
         darkAlivePieces.addEnemyArmy(whiteAlivePieces);
 
@@ -241,6 +253,11 @@ public class Main extends Application {
 
             Move result = tryMove(piece, newX, newY);
             if (result != null) {
+                if (result.getType() == MoveType.CASTLE_KINGSIDE) {
+                    newX = xKingCastleKingSide;
+                } else if (result.getType() == MoveType.CASTLE_QUEENSIDE) {
+                    newX = xKingCastleQueenSide;
+                }
                 boolean take = board[newX][newY].getPiece() != null;
                 boolean promotion = false;
                 pieceDuplication = 0;
@@ -261,15 +278,20 @@ public class Main extends Application {
                 } else {
                     enPassantXPossibility = -2;
                 }
+
+                int xOfCastlingRook = 0;
+
                 if (result.type == MoveType.KILL) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
+                    board [newX] [newY].getPiece().controlCastlePossibilities();
                     whichArmy.kill(board [newX] [newY].getPiece());
 
                 } else if (result.type == MoveType.EN_PASSANT) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     int yOfVictim = (onMove.getPieceColour() == PieceColour.WHITE) ? newY + 1 : newY - 1;
                     secondMoved = new Note(board [newX] [yOfVictim].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
+                    board [newX] [yOfVictim].getPiece().controlCastlePossibilities();
                     whichArmy.kill(board [newX] [yOfVictim].getPiece());
                 } else if (result.type == MoveType.SIMPLE_PROMOTION) {
                     promotionBox = promotionHBox(piece, stage);
@@ -281,6 +303,7 @@ public class Main extends Application {
                 } else if (result.type == MoveType.KILL_PROMOTION) {
                     Army whichArmy = (onMove.getPieceColour() == PieceColour.WHITE) ? darkAlivePieces : whiteAlivePieces;
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
+                    board [newX] [newY].getPiece().controlCastlePossibilities();
                     whichArmy.kill(board [newX] [newY].getPiece());
                     promotionBox = promotionHBox(piece, stage);
                     right.getChildren().add(promotionBox);
@@ -288,16 +311,34 @@ public class Main extends Application {
                     piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
                     onMove.switchMode();
                     promotion = true;
+                } else if (result.getType() == MoveType.CASTLE_KINGSIDE) {
+                    Piece rook = (piece.getColour() == PieceColour.WHITE) ? onMove.getWhiteRightRook() : onMove.getDarkRightRook();
+                    board [rook.getCoordinates().getX()] [rook.getCoordinates().getY()].setPiece(null);
+                    secondMoved = new Note(rook, rook.getCoordinates().getX(), rook.getCoordinates().getY(),
+                            xRookCastleKingSide, (piece.getColour() == PieceColour.WHITE) ? yWhite : yDark);
+                    rook.move(xRookCastleKingSide, (piece.getColour() == PieceColour.WHITE) ? yWhite : yDark);
+                    board [rook.getCoordinates().getX()] [rook.getCoordinates().getY()].setPiece(rook);
+                    xOfCastlingRook = rook.getCoordinates().getX();
+                } else if (result.getType() == MoveType.CASTLE_QUEENSIDE) {
+                    Piece rook = (piece.getColour() == PieceColour.WHITE) ? onMove.getWhiteLeftRook() : onMove.getDarkLeftRook();
+                    board [rook.getCoordinates().getX()] [rook.getCoordinates().getY()].setPiece(null);
+                    secondMoved = new Note(rook, rook.getCoordinates().getX(), rook.getCoordinates().getY(),
+                            xRookCastleQueenSide, (piece.getColour() == PieceColour.WHITE) ? yWhite : yDark);
+                    rook.move(xRookCastleQueenSide, (piece.getColour() == PieceColour.WHITE) ? yWhite : yDark);
+                    board [rook.getCoordinates().getX()] [rook.getCoordinates().getY()].setPiece(rook);
+                    xOfCastlingRook = rook.getCoordinates().getX();
                 }
 
                 piece.move(newX, newY);
-                board[oldX][oldY].setPiece(null);
+                if (!((result.getType() == MoveType.CASTLE_KINGSIDE || result.getType() == MoveType.CASTLE_QUEENSIDE) && xOfCastlingRook == oldX)) {
+                    board[oldX][oldY].setPiece(null);
+                }
                 board[newX][newY].setPiece(piece);
                 Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
                 gameSupervisor.add(annotation, take, pieceDuplication, promotion);
 
                 piece.repaint();
-
+                piece.controlCastlePossibilities();
                 if (result.getType() != MoveType.SIMPLE_PROMOTION && result.getType() != MoveType.KILL_PROMOTION) {
                     postMoveAction(stage);
                 }
