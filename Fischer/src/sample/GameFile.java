@@ -31,7 +31,7 @@ public class GameFile {
     }
 
     private IntPair squareDecryptor(char oldX, char oldY){
-        int asciForLetter = 97, asciForNumber = 45;
+        int asciForLetter = 97, asciForNumber = 48;
         int x = oldX - asciForLetter;
         int y = Main.SQUARE_NUMBER - (oldY - asciForNumber);
         return new IntPair(x,y);
