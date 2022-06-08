@@ -1,0 +1,16 @@
+Testy poprawno?ciowe dla wczytywania partii z pliku
+
+Zosta?o przetestowane wczytywanie partii z 10 plików, które w sumie sk?adaj? si? na oko?o 1000 ruchów do wczytania przez aplikacj?.
+W 1 fazie testów, w 5 testach otrzymano oczekiwanu rezultat, w pozosta?ych wczytana partia nie by?a zgodna z faktycznym stanem przebiegu gry.
+Aplikacja zwróci?a b??dy:
+w 3 testach dla metody MovePiece
+w 2 testach dla metody MovePawn
+Jeden z b??dów w te?cie powsta?y w metodzie MovePiece wynika? z nieprawid?owo?ci w te?cie, wi?c w rzeczywisto?ci b??dem nie by?.
+
+Drugi b??d wynika? ze z?ej konwersji znaku z chara do inta przy porównywaniu na planszy.
+
+Po poprawieniu testu4 i poprawieniu niepoprawnej konwersji wszystkie testy, które wcze?niej dawa?y z?y out powodowany przez MovePiece zacz??y dawa? poprawny out.
+
+B??d w metodzie MovePawn polega? na z?ym wywo?ywaniu metody getPiece gdy chcieli?my usun?? figur? z armii. W przypadku, gdy bili?my w przelocie, próbowali?my wywo?a? getPiece na polu, na którym nie sta?a ?adna figura, co powodowa?o b??d wykonania. Naprawienie tego nie by?o kosztowne, poniewa? i tak trzymali?my referencj? do usuwanej figury w note.
+
+Po poprawieniu wszystkie 10 testów daje poprawny output.
