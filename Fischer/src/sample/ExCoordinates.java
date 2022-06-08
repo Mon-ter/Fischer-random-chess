@@ -59,7 +59,7 @@ public class ExCoordinates {
 
         int i = 0;
 
-        while (i < 8) {
+        while (i < Main.SQUARE_NUMBER) {
 
             if (t [i] == PieceKind.KING) {
 
