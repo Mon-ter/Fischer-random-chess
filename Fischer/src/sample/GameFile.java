@@ -61,9 +61,7 @@ public class GameFile {
         if(bitka){
             fromX = ch[0] < ch[ch.length-2] ? pair.x-1 : pair.x+1;
             if(supervisor.board[pair.x][pair.y].getPiece() == null){ //en passant
-                Army arm = supervisor.counter % 2 == 0 ? blackPieces : whitePieces;
                 note2 = new Note(supervisor.board[pair.x][fromY].getPiece(), pair.x, pair.y, -1,-1);
-                arm.kill(supervisor.board[pair.x][fromY].getPiece());
                 supervisor.board[pair.x][fromY].setPiece(null);
             }
         } else{
@@ -73,7 +71,7 @@ public class GameFile {
         Note note = new Note(supervisor.board[fromX][fromY].getPiece(),fromX,fromY, pair.x, pair.y);
         Pair<Note,Note> annotation = new Pair(note, note2);
         if(note2 != null){
-            if(supervisor.board[pair.x][pair.y].getPiece().getColour() == PieceColour.BLACK){
+            if(note2.getPiece().getColour() == PieceColour.BLACK){
                 blackPieces.kill(note2.getPiece());
             }else{
                 whitePieces.kill(note2.getPiece());
@@ -104,7 +102,7 @@ public class GameFile {
             if(move.type == MoveType.KILL && temp.getKind() == kind){
                 if (conflict == 0){
                     theOne = true;
-                }else if((conflict == 1 && intDecryptor(ch[1]) == move.getX()) || (conflict == 2 && (int)ch[1] - 40 == move.getY())){
+                }else if((conflict == 1 && intDecryptor(ch[1]) == move.getX()) || (conflict == 2 && 8 - ((int)ch[1] - 48) == move.getY())){
                     theOne = true;
                 }
             }
@@ -181,6 +179,7 @@ public class GameFile {
 
     private void resolveMove(String move){
         move = move.replace("+", "").replace("=", "");
+        System.out.println(move + " " + supervisor.counter);
         char[] ch = move.toCharArray();
         int conflict = 0;
         if(!(move.contains("x")) && move.length() >3){
@@ -210,12 +209,17 @@ public class GameFile {
 
     public void readMoves(String filePath){
         try(FileReader reader = new FileReader(filePath)){
+            int sup = supervisor.counter;
             Scanner sc = new Scanner(reader);
             for(int i = 0; sc.hasNext(); i++){
                 String line = sc.next();
                 if(i%3 != 0) {
                     resolveMove(line);
+                    if(sup == supervisor.counter){
+                        System.out.println("ERROR");
+                    }
                 }
+                sup = supervisor.counter;
             }
             supervisor.counter--;
         }catch(IOException err){
