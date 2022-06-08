@@ -170,6 +170,9 @@ public class StageManager{
         button.setPrefSize(234, Main.PIECE_SIZE / 2);
         button.setOnAction(e -> primaryStage.setScene(createGame(toggleButton.isSelected())));
 
+        Button buttonBack = new Button("Go back");
+        buttonBack.setPrefSize(234, Main.PIECE_SIZE / 2);
+        buttonBack.setOnAction(e -> primaryStage.setScene(MainMenu));
 
         grid.add(timeControlBox,1,0);
         grid.add(choiceBox,1,1);
@@ -178,7 +181,7 @@ public class StageManager{
         grid.add(textTimeControl,0,0);
         grid.add(textPieces,0,1);
         grid.add(textGameMode,0,2);
-
+        grid.add(buttonBack, 0, 4, 2, 1);
         GameStartMenu = gameMenu;
     }
 
