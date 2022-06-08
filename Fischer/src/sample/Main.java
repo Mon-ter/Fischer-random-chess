@@ -95,6 +95,12 @@ public class Main extends Application {
         root.setRight(right);
         root.setCenter(center);
 
+        if (graphicFolder.equals("setTwo")) {
+            darkTileColour = Color.SPRINGGREEN;
+        } else {
+            darkTileColour = Color.TOMATO;
+        }
+
         this.right = right;
 
         center.setPrefSize(TILE_SIZE * SQUARE_NUMBER, TILE_SIZE * SQUARE_NUMBER);
