@@ -73,7 +73,7 @@ public class Main extends Application {
 
     public static Color darkTileColour = Color.TOMATO;
     public static Color lightTileColour = Color.WHITESMOKE;
-    public static String graphicFolder = "new";
+    public static String graphicFolder = "setOne";
 
     public Parent createContent(boolean FischerOnes, boolean gameFromFile, Stage stage) {
         clearData();
@@ -84,7 +84,7 @@ public class Main extends Application {
         root.setCenter(center);
 
         if (graphicFolder.equals("setTwo")) {
-            darkTileColour = Color.SPRINGGREEN;
+            darkTileColour = Color.LIGHTGREEN;
         } else {
             darkTileColour = Color.TOMATO;
         }
