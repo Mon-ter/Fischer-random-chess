@@ -3,6 +3,7 @@ package sample;
 public class Square {
     private int x;
     private int y;
+    public final int charConstant = 97;
 
     Square(int x, int y) {
         this.x = x;
@@ -14,7 +15,7 @@ public class Square {
     }
 
     char getXasChar(){
-        int n = x + 97;
+        int n = x + charConstant;
         return (char)n;
     }
 
