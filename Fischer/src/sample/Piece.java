@@ -65,6 +65,10 @@ public class Piece extends StackPane {
         return possibleMoves;
     }
 
+    public void setKindAfterPromotion(PieceKind kind) {
+        kindAfterPromotion = kind;
+    }
+
     public void setKind(PieceKind kind) {
         this.kind = kind;
         String src = getImageSource(colour, kind, 0);

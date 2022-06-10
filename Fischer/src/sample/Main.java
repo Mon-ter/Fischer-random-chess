@@ -313,10 +313,13 @@ public class Main extends Application {
                     board [newX] [yOfVictim].getPiece().controlCastlePossibilities();
                     whichArmy.kill(board [newX] [yOfVictim].getPiece());
                 } else if (result.type == MoveType.SIMPLE_PROMOTION) {
-                    promotionBox = promotionHBox(piece, stage);
+                    Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
+                    promotionBox = promotionHBox(piece, stage, annotation, pieceDuplication, result);
+
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
                     piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
+
                     onMove.switchMode();
                     promotion = true;
                 } else if (result.type == MoveType.KILL_PROMOTION) {
@@ -324,10 +327,12 @@ public class Main extends Application {
                     secondMoved = new Note(board [newX] [newY].getPiece(), newX, newY, graveyard.getX(), graveyard.getY());
                     board [newX] [newY].getPiece().controlCastlePossibilities();
                     whichArmy.kill(board [newX] [newY].getPiece());
-                    promotionBox = promotionHBox(piece, stage);
+                    Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
+                    promotionBox = promotionHBox(piece, stage, annotation, pieceDuplication, result);
                     right.getChildren().add(promotionBox);
                     promotionBox.relocate(TILE_SIZE / 2, 2 * TILE_SIZE);
                     piece.setPromotionMoveNumber(gameSupervisor.realSize() + 1);
+
                     onMove.switchMode();
                     promotion = true;
                 } else if (result.getType() == MoveType.CASTLE_KINGSIDE) {
@@ -353,12 +358,14 @@ public class Main extends Application {
                     board[oldX][oldY].setPiece(null);
                 }
                 board[newX][newY].setPiece(piece);
-                Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
-                gameSupervisor.add(annotation, pieceDuplication ,result);
 
-                piece.repaint();
+
+
                 piece.controlCastlePossibilities();
                 if (result.getType() != MoveType.SIMPLE_PROMOTION && result.getType() != MoveType.KILL_PROMOTION) {
+                    Pair<Note, Note> annotation = new Pair(firstMoved, secondMoved);
+                    gameSupervisor.add(annotation, pieceDuplication ,result);
+                    piece.repaint();
                     postMoveAction(stage);
                 }
 
@@ -567,7 +574,7 @@ public class Main extends Application {
         }
     }
 
-    public HBox promotionHBox(Piece piece, Stage stage) {
+    public HBox promotionHBox(Piece piece, Stage stage, Pair<Note, Note> annotation, int pieceDuplication, Move result) {
         Button queen = new Button("Q");
         Button bishop = new Button("B");
         Button knight = new Button("K");
@@ -577,18 +584,17 @@ public class Main extends Application {
         bishop.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
         knight.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
         rook.setPrefSize(PROMOTION_BUTTON_SIZE, PROMOTION_BUTTON_SIZE);
-
         queen.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.QUEEN, piece, stage);
+            doPromotionButtonAction(PieceKind.QUEEN, piece, stage, annotation, pieceDuplication, result);
         } );
         bishop.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.BISHOP, piece, stage);
+            doPromotionButtonAction(PieceKind.BISHOP, piece, stage, annotation, pieceDuplication, result);
         } );
         knight.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.KNIGHT, piece, stage);
+            doPromotionButtonAction(PieceKind.KNIGHT, piece, stage, annotation, pieceDuplication, result);
         } );
         rook.setOnAction(e -> {
-            doPromotionButtonAction(PieceKind.ROOK, piece, stage);
+            doPromotionButtonAction(PieceKind.ROOK, piece, stage, annotation, pieceDuplication, result);
         } );
         return new HBox(queen, bishop, knight, rook);
     }
@@ -627,9 +633,12 @@ public class Main extends Application {
         }
     }
 
-    public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece, Stage stage) {
+    public void doPromotionButtonAction(PieceKind buttonKind, Piece movingPiece, Stage stage, Pair<Note, Note> annotation, int pieceDuplication, Move result) {
         right.getChildren().remove(promotionBox);
+        movingPiece.setKindAfterPromotion(buttonKind);
+        gameSupervisor.add(annotation, pieceDuplication, result);
         movingPiece.promote(buttonKind);
+        movingPiece.repaint();
         onMove.switchMode();
         postMoveAction(stage);
     }
