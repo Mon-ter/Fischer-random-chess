@@ -178,7 +178,11 @@ public class StageManager{
 
         Button button = new Button("Start New Game");
         button.setPrefSize(gameStartMenuButtonWidth, buttonHeight);
-        button.setOnAction(e -> primaryStage.setScene(createGame(toggleButton.isSelected(), false)));
+        button.setOnAction(e -> {
+            boolean isSelected = toggleButton.isSelected();
+            toggleButton.setSelected(false);
+            primaryStage.setScene(createGame(isSelected, false));
+            });
 
         Button buttonBack = new Button("Go back");
         buttonBack.setPrefSize(gameStartMenuButtonWidth, buttonHeight);
