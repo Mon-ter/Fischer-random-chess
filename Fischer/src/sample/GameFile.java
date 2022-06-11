@@ -53,12 +53,12 @@ public class GameFile {
         return k;
     }
 
-    private void movePawn(char[] ch, PieceKind promotion, boolean bitka){
+    private void movePawn(char[] ch, PieceKind promotion, boolean takes){
         IntPair pair = squareDecryptor(ch[ch.length-2], ch[ch.length-1]);
         Note note2 = supervisor.board[pair.x][pair.y].getPiece() == null ? null : new Note(supervisor.board[pair.x][pair.y].getPiece(), pair.x, pair.y, -1,-1);
         int fromY = supervisor.counter % 2 == 0 ? pair.y +1 : pair.y-1;
         int fromX;
-        if(bitka){
+        if(takes){
             fromX = ch[0] < ch[ch.length-2] ? pair.x-1 : pair.x+1;
             if(supervisor.board[pair.x][pair.y].getPiece() == null){ //en passant
                 note2 = new Note(supervisor.board[pair.x][fromY].getPiece(), pair.x, pair.y, -1,-1);
