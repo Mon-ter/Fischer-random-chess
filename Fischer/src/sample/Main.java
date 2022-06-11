@@ -3,37 +3,25 @@ package sample;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.chart.PieChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
@@ -85,7 +73,7 @@ public class Main extends Application {
 
     public static Color darkTileColour = Color.TOMATO;
     public static Color lightTileColour = Color.WHITESMOKE;
-    public static String graphicFolder = "new";
+    public static String graphicFolder = "setOne";
 
     public Parent createContent(boolean FischerOnes, boolean gameFromFile, Stage stage) {
         clearData();
@@ -96,7 +84,7 @@ public class Main extends Application {
         root.setCenter(center);
 
         if (graphicFolder.equals("setTwo")) {
-            darkTileColour = Color.SPRINGGREEN;
+            darkTileColour = Color.LIGHTGREEN;
         } else {
             darkTileColour = Color.TOMATO;
         }
@@ -224,7 +212,21 @@ public class Main extends Application {
             darkClock.getTimer().relocate((TILE_SIZE * 3 - whiteClock.getWidth()) / 2, TILE_SIZE / 2);
             whiteClock.getTimer().relocate((TILE_SIZE * 3 - darkClock.getWidth()) / 2, TILE_SIZE * SQUARE_NUMBER - 3 * TILE_SIZE / 2);
 
-            right.getChildren().addAll(whiteClock.getTimer(), darkClock.getTimer());
+            Button addTime = new Button("Add 10 sec");
+            addTime.setPrefSize(2 * PIECE_SIZE, PIECE_SIZE / 2);
+            addTime.relocate((TILE_SIZE * 3 - 2 * PIECE_SIZE) / 2, 3 * TILE_SIZE);
+            addTime.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    if (onMove.getPieceColour() == PieceColour.BLACK) {
+                        darkClock.addTime(10);
+                    } else {
+                        whiteClock.addTime(10);
+                    }
+                }
+            });
+
+            right.getChildren().addAll(whiteClock.getTimer(), darkClock.getTimer(), addTime);
             whiteClock.play();
         }
 
@@ -547,6 +549,11 @@ public class Main extends Application {
         private void subtractSecond() {
             timeLeft--;
 
+        }
+
+        public void addTime(int time) {
+            timeLeft += time;
+            writeTimeDown();
         }
 
         public double getWidth() {
