@@ -179,7 +179,6 @@ public class GameFile {
 
     private void resolveMove(String move){
         move = move.replace("+", "").replace("=", "");
-        System.out.println(move + " " + supervisor.counter);
         char[] ch = move.toCharArray();
         int conflict = 0;
         if(!(move.contains("x")) && move.length() >3){
@@ -209,17 +208,12 @@ public class GameFile {
 
     public void readMoves(String filePath){
         try(FileReader reader = new FileReader(filePath)){
-            int sup = supervisor.counter;
             Scanner sc = new Scanner(reader);
             for(int i = 0; sc.hasNext(); i++){
                 String line = sc.next();
                 if(i%3 != 0) {
                     resolveMove(line);
-                    if(sup == supervisor.counter){
-                        System.out.println("ERROR");
-                    }
                 }
-                sup = supervisor.counter;
             }
             supervisor.counter--;
         }catch(IOException err){
