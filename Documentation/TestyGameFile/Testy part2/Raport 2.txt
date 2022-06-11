@@ -1,0 +1,1 @@
+Wszystkie testy dały oczekiwany output, więc przy około 2000 wykonanych ruchów możemy być prawie pewni, że wczytywanie pliku z gry nie zawiera błędów.
