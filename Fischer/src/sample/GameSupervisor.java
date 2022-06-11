@@ -29,8 +29,8 @@ public class GameSupervisor {
     }
 
     private void pgnSaver(Pair<Note, Note> note, int pieceDuplication, Move result){
-        if(counter % 2 == 0){
-            pgnNotation += (counter/2+1 + ". ");
+        if(game.size() % 2 == 1){
+            pgnNotation += (game.size()/2 + 1 + ". ");
         }
         if(result.type == MoveType.CASTLE_KINGSIDE){
             pgnNotation += "0-0 ";
